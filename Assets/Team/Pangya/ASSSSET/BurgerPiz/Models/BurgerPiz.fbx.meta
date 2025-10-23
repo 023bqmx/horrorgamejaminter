@@ -3,7 +3,372 @@ guid: ff92884bd4d124a4f8969ebf5df6b49c
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Armchair
+    second: {fileID: 2100000, guid: 44667677f06a9b147b3b26d7daed655f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AsphaltDamaged
+    second: {fileID: 2100000, guid: 1453396a65b2eb84da83a13c52187ee5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Background
+    second: {fileID: 2100000, guid: abfa63302d5cbe24d92b0bad79397868, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Blu
+    second: {fileID: 2100000, guid: 149558ff5d3f2584aa0e3f9e4f33fe20, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BrickPainted
+    second: {fileID: 2100000, guid: 096d0671dd073924baaa3bc67fcf5533, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Building
+    second: {fileID: 2100000, guid: 03fcaf1c6684b104faed5b053a155408, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Building_01
+    second: {fileID: 2100000, guid: af699091accc6694eb654d1d4b20be5a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Building_02
+    second: {fileID: 2100000, guid: f0a5f38a30b2fab4aa9dd7d58a32b730, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Cash_register
+    second: {fileID: 2100000, guid: 06aecf04638491d46a3a42c110164622, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Chair
+    second: {fileID: 2100000, guid: fc6b392ab6ef30b429da04b74f4c6560, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ColorWhite
+    second: {fileID: 2100000, guid: 4d85d95d517d17f48baacf5511adc428, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Door
+    second: {fileID: 2100000, guid: 2def1ba61469c774786265995be76b3b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Door_01
+    second: {fileID: 2100000, guid: c8282a99afacc6842b5d826a88f49779, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Door_02
+    second: {fileID: 2100000, guid: c28c6a36a56b3464d859a54c71e4755a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Door_03
+    second: {fileID: 2100000, guid: fbe9212314c571940862d31aca5782c6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Emissor
+    second: {fileID: 2100000, guid: 84e980f545d12ec48bf26d743aea6f9a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Glass
+    second: {fileID: 2100000, guid: 10558b15416e61649986de4cf0d6f4e3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grass
+    second: {fileID: 2100000, guid: 6e99daa1cbdbcfa40a656391f2068833, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grill
+    second: {fileID: 2100000, guid: df3998564bc8fb3489715aa44fbc5cf5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lamppost
+    second: {fileID: 2100000, guid: 66650934c33fead449cd3377d34c6939, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Light
+    second: {fileID: 2100000, guid: cca56ad3c4a49f645af4d8825c7c86f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lines
+    second: {fileID: 2100000, guid: 1ccc74680dc4e174c9e2a40e2a720215, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Marble
+    second: {fileID: 2100000, guid: 26e59e2a30c1b324395ef1bfac309c09, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material
+    second: {fileID: 2100000, guid: 26022f67181e66043919b04a2e693705, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal
+    second: {fileID: 2100000, guid: 9b2530ec621e57844bf80089898ae3c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: MetalBare
+    second: {fileID: 2100000, guid: 389ea04e57397d04ab560531803bbe15, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal_01
+    second: {fileID: 2100000, guid: 8abd0d89ed2e70649bd10ecf027e4149, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mirror
+    second: {fileID: 2100000, guid: ce374e2a54271fc4a912f3760d47aed0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Office_Ceiling
+    second: {fileID: 2100000, guid: 8441819f70a6dc84fb8156a7b14afc39, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Orange
+    second: {fileID: 2100000, guid: 5460b101bb3e4b34da57bae83dc9365b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Paper_dispenser
+    second: {fileID: 2100000, guid: a94b73ca1cdb76741b92026ba431943e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plants
+    second: {fileID: 2100000, guid: 9f3a4762654d1fc49b76d05c92f813a1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plaster
+    second: {fileID: 2100000, guid: b3fed55c93a1537409de6f52072d142c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plaster_01
+    second: {fileID: 2100000, guid: 86a9be36aabb5274cb9569ce2e7a4dd4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plaster_02
+    second: {fileID: 2100000, guid: 17e3f384638eebb449665e0a48f797ba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Refrijerator_M
+    second: {fileID: 2100000, guid: c5dc6a9e4d22a154c8090a03a531f00a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Resources
+    second: {fileID: 2100000, guid: 614be791dfd80334d96e1970a5f3facc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Road
+    second: {fileID: 2100000, guid: e9858425c580bb84b9623b3cf15a85a7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Roof_tiles
+    second: {fileID: 2100000, guid: 4954cb119ba860d40868a4b9761f0f1f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RooftilesMetal
+    second: {fileID: 2100000, guid: 3e6368f6a4403bc48bf4f627fdf5c514, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf_B
+    second: {fileID: 2100000, guid: 62dbe3eb8f8b3ca4fa4804d139e6ecbd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf_C
+    second: {fileID: 2100000, guid: 877e163c48c416f40a68736967966aa0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf_F
+    second: {fileID: 2100000, guid: a1e2715e66615a04581bd5d7bf2a2186, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf_FR
+    second: {fileID: 2100000, guid: cae5dcdc0e7ad8342a6171ba20d38769, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf_fd
+    second: {fileID: 2100000, guid: b92dabb9cf483974588c092cb52a8287, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Sign
+    second: {fileID: 2100000, guid: 1d2c1f9b3313223418dfebc52c4c311c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Soap_dispenser
+    second: {fileID: 2100000, guid: 6d8fac61236290f46824cca46791f5fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Soda_fountain
+    second: {fileID: 2100000, guid: 90e1bccb5c133ae4bab56b38bd2121f9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Table
+    second: {fileID: 2100000, guid: d666d374afcdf284a859ab449b3bf77b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Terminal
+    second: {fileID: 2100000, guid: b16e41f25cf0f4047a7fbc6bdc9186a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tiles
+    second: {fileID: 2100000, guid: b739cc031167e1642945e55f96fd6cf4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TilesPlain
+    second: {fileID: 2100000, guid: a705f85d3e35cf64e8902b17a7ce4134, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Toilet
+    second: {fileID: 2100000, guid: cf85380fdb4ba084a8b72b76f424d731, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tree
+    second: {fileID: 2100000, guid: 39ef9cba934ccca469c4e85269939dc0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tree_01
+    second: {fileID: 2100000, guid: c5d66a8080f972f4a8e735cb8133bf35, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tree_02
+    second: {fileID: 2100000, guid: 1753326b5b66a944398af8e2272b0377, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tree_03
+    second: {fileID: 2100000, guid: 319510c6afaaa6847a1d163398270df3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tumbler
+    second: {fileID: 2100000, guid: 1260fc15e854d864a8a6d8a94a2f10f8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ventilation
+    second: {fileID: 2100000, guid: 0be9ac1b3365ae940bfe5a69fdb373ca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wall
+    second: {fileID: 2100000, guid: 84bad7323621383478fe28241b984708, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wall_W
+    second: {fileID: 2100000, guid: c7d1787098298f44ba7ab94fe72420cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wire
+    second: {fileID: 2100000, guid: fda07938d6fc36d4d99b532640e754af, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood
+    second: {fileID: 2100000, guid: d07812cf1202d834ebe2a85e1e55f7a3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodChips
+    second: {fileID: 2100000, guid: 6fd986cbfc3beb246a709636a4f5ce91, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodFloor
+    second: {fileID: 2100000, guid: 59a5feb9191d8ed40ac7d04cbbdedc5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodPlanksFloors0
+    second: {fileID: 2100000, guid: 06532a0343c799b4989f60cbd3ae975b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: air-conditioning
+    second: {fileID: 2100000, guid: cc9523ec215af734ea4cc9b0e0518cf3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cardboard_boxes
+    second: {fileID: 2100000, guid: d0fe54b993bde8846bb1c754681b52ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: menu_burger
+    second: {fileID: 2100000, guid: 1894262057ee4bd49a6e32736f3a957c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: plants_flowers
+    second: {fileID: 2100000, guid: aaf86b0b6ebbe61428a518ea36f42d10, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sidewalk
+    second: {fileID: 2100000, guid: f89f5bc4d9a2b414fa01e44bed44dd00, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sidewalk_01
+    second: {fileID: 2100000, guid: 7935962dfbcf54f47bbc25e0874e6231, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: urinary
+    second: {fileID: 2100000, guid: 94e6b393113a8c04fbd8be6b44281d9b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
