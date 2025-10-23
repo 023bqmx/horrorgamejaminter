@@ -650,11 +650,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   openSeeTarget: {fileID: 595011507}
-  cameraIndex: 0
+  cameraIndex: 1
   videoPath: 
   autoStart: 1
-  autoListCameras: 0
-  dontPrint: 0
+  autoListCameras: 1
+  dontPrint: 1
   dynamicPort: 0
   exePath: Assets/StreamingAssets/OpenSeeFace/facetracker.exe
   modelPath: Assets/StreamingAssets/OpenSeeFace/models
@@ -663,10 +663,9 @@ MonoBehaviour:
   - 1
   - --max-threads
   - 1
-  extraOptions: '-c 0 -i 127.0.0.1 -p 11573 -v 0 --model 2 -W 1280 -H 720 -F 30 --use-dshowcapture
-    0 '
-  logCommandline: 0
-  usePinvoke: 0
+  extraOptions: --model 2 -W 1920 -H 1080 -F 30 --use-dshowcapture 1
+  logCommandline: 1
+  usePinvoke: 1
   usePinvokeListCameras: 0
   pinvokeStdOut: output.txt
   pinvokeStdErr: error.txt
