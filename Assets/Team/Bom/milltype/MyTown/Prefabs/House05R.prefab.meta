@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9b5c0b438e896e043995b484ded4de8a
+timeCreated: 1594873029
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 201936
+  packageName: MyTown Light
+  packageVersion: 1.0
+  assetPath: Assets/milltype/MyTown/Prefabs/House05R.prefab
+  uploadId: 449994
