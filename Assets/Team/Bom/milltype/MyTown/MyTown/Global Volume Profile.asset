@@ -21,13 +21,41 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.552
+    m_Value: 0.497
   smoothness:
-    m_OverrideState: 0
-    m_Value: 0.2
+    m_OverrideState: 1
+    m_Value: 0.35
   rounded:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &-4017829758337443590
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5e1dc532bcb41949b58bc4f2abfbb7e, type: 3}
+  m_Name: LensDistortion
+  m_EditorClassIdentifier: 
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.46
+  xMultiplier:
+    m_OverrideState: 1
+    m_Value: 0.546
+  yMultiplier:
+    m_OverrideState: 1
+    m_Value: 0.466
+  center:
+    m_OverrideState: 0
+    m_Value: {x: 0.5, y: 0.5}
+  scale:
+    m_OverrideState: 0
+    m_Value: 1
 --- !u!114 &-2675229138776409415
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -43,7 +71,7 @@ MonoBehaviour:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.178
+    m_Value: 1
 --- !u!114 &-2152594980051195252
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -74,16 +102,16 @@ MonoBehaviour:
     m_Value: 0
   focusDistance:
     m_OverrideState: 1
-    m_Value: 10
+    m_Value: 1231.7
   aperture:
     m_OverrideState: 1
-    m_Value: 15.5
+    m_Value: 1
   focalLength:
     m_OverrideState: 1
-    m_Value: 232
+    m_Value: 23
   bladeCount:
     m_OverrideState: 1
-    m_Value: 7
+    m_Value: 3
   bladeCurvature:
     m_OverrideState: 0
     m_Value: 1
@@ -109,6 +137,7 @@ MonoBehaviour:
   - {fileID: -8309507543257684283}
   - {fileID: -2675229138776409415}
   - {fileID: -2152594980051195252}
+  - {fileID: -4017829758337443590}
 --- !u!114 &574719583345600267
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -158,7 +187,7 @@ MonoBehaviour:
     m_Value: 1927.2
   scatter:
     m_OverrideState: 1
-    m_Value: 0.29
+    m_Value: 0.486
   clamp:
     m_OverrideState: 1
     m_Value: 65521.78
@@ -199,7 +228,7 @@ MonoBehaviour:
     m_Value: 9
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.632
   response:
     m_OverrideState: 1
     m_Value: 0
