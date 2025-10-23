@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement; // << เพิ่ม
+using Unity.VisualScripting;
+
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -10,7 +12,7 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
     [RequireComponent(typeof(PlayerInput))]
 #endif
-    public class FirstPersonController : MonoBehaviour
+    public class FirstPersonController : Singleton<FirstPersonController>
     {
         [Header("Player")]
         [Tooltip("Move speed of the character in m/s")]
