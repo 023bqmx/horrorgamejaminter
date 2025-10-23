@@ -152,14 +152,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 286092441330865840}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.111525744, y: 0.11542756, z: 0.98229647, w: -0.096603416}
+  m_LocalRotation: {x: -0.11383584, y: -0.14819328, z: -0.97732633, w: 0.099565975}
   m_LocalPosition: {x: 0.050781753, y: -0.03067316, z: -0.000754188}
   m_LocalScale: {x: 1.000011, y: 0.9999998, z: 1.0000199}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1001162896778800047}
   m_Father: {fileID: 7642716359088271929}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -18.2, y: 11.722, z: -170.25}
 --- !u!1 &331504991697648868
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,14 +246,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 480210656368137890}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0016803717, y: -0.010174879, z: -0.011898678, w: 0.9998761}
+  m_LocalRotation: {x: -0.0010609495, y: 0.08906181, z: -0.01186432, w: 0.99595493}
   m_LocalPosition: {x: -9.685754e-10, y: 0.055165455, z: -0.0046867323}
   m_LocalScale: {x: 0.99999994, y: 1, z: 1.0000001}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4031019486474383146}
   m_Father: {fileID: 7642716359088271929}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 10.22, z: -1.365}
 --- !u!1 &790285961464751519
 GameObject:
   m_ObjectHideFlags: 0
@@ -692,8 +692,8 @@ Transform:
   m_GameObject: {fileID: 3034514395186911487}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071069, y: -0.000000001918477, z: -0.0000000014876737, w: 0.7071067}
-  m_LocalPosition: {x: 0.0000000020861626, y: -0.0000000051502136, z: 0.000000002458692}
-  m_LocalScale: {x: 1, y: 0.9999999, z: 0.9999999}
+  m_LocalPosition: {x: -0.0021136, y: -0.092382, z: -0.040826}
+  m_LocalScale: {x: 1.9458, y: 1.9457997, z: 1.9457997}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6688840298926701061}
@@ -1217,6 +1217,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2333811848836295323}
+  - component: {fileID: 6205303352875169273}
   m_Layer: 0
   m_Name: Armature
   m_TagString: Untagged
@@ -1240,6 +1241,29 @@ Transform:
   - {fileID: 7642716359088271929}
   m_Father: {fileID: 6688840298926701061}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &6205303352875169273
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4250439069400260817}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.13
+  m_Height: 1.28
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.49, z: 0}
 --- !u!1 &4369365816525123429
 GameObject:
   m_ObjectHideFlags: 0
@@ -1917,8 +1941,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6688840298926701061}
-  - component: {fileID: 345819731454032379}
   - component: {fileID: 3182979333007050640}
+  - component: {fileID: 4075558752765983700}
+  - component: {fileID: 6378745676365112188}
+  - component: {fileID: 5393085368498459397}
   m_Layer: 0
   m_Name: Ghost01
   m_TagString: Untagged
@@ -1943,22 +1969,6 @@ Transform:
   - {fileID: 1883350955664728357}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &345819731454032379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6311892169546768575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cee9821edaeadf7438f172e63e36ac39, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  headBone: {fileID: 4562659276274112549}
-  target: {fileID: 0}
-  rotationSpeed: 5
-  rotationOffset: {x: 0, y: 0, z: 0}
 --- !u!95 &3182979333007050640
 Animator:
   serializedVersion: 7
@@ -1981,6 +1991,91 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!54 &4075558752765983700
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6311892169546768575}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 32
+  m_CollisionDetection: 0
+--- !u!114 &6378745676365112188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6311892169546768575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b34639f3a0572f45805fc4ef81806f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 0}
+  anim: {fileID: 0}
+  headObj: {fileID: 4562659276274112549}
+  agent: {fileID: 0}
+  waypoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  loopPatrol: 1
+  viewRadius: 20
+  viewAngle: 180
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 128
+  searchDuration: 2.5
+  walkSpeed: 3
+  runSpeed: 6
+  arriveDistance: 0.6
+  smileGate: {fileID: 0}
+  trackingHealth: {fileID: 0}
+  idleState: Idle
+  walkState: Walk
+  runState: Run
+--- !u!195 &5393085368498459397
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6311892169546768575}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &6403849908521891375
 GameObject:
   m_ObjectHideFlags: 0
