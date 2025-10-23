@@ -43,8 +43,8 @@ public class SmileGateByMouthWideAuto : MonoBehaviour
 
         isSmiling = lastMouthWide >= threshold;
 
-        //// ¥Ÿ§Ë“„π Console ∑ÿ° ~10 ‡ø√¡
-        //if (Time.frameCount % 10 == 0)
-        //    Debug.Log($"idx={usedFaceIndex} mw={lastMouthWide:F3} conf={lastConfidence:F2} thr={threshold:F2} smiling={isSmiling}");
+        // ¥Ÿ§Ë“„π Console ∑ÿ° ~10 ‡ø√¡
+        if (Time.frameCount % 10 == 0)
+            Debug.Log($"idx={usedFaceIndex} mw={lastMouthWide:F3} conf={lastConfidence:F2} thr={threshold:F2} smiling={isSmiling}");
     }
 }

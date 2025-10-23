@@ -68,6 +68,6 @@ public class OpenSeeTrackingHealth : MonoBehaviour
         isTracking = isReceiving && confident;
 
 
-        Debug.Log("isTracking : " + isTracking);
+        //Debug.Log("isTracking : " + isTracking);
     }
 }
