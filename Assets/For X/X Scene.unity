@@ -652,19 +652,19 @@ MonoBehaviour:
   openSeeTarget: {fileID: 595011507}
   cameraIndex: 0
   videoPath: 
-  autoStart: 0
+  autoStart: 1
   autoListCameras: 0
-  dontPrint: 1
+  dontPrint: 0
   dynamicPort: 0
-  exePath: OpenSeeFace/facetracker.exe
-  modelPath: OpenSeeFace/models
+  exePath: Assets/StreamingAssets/OpenSeeFace/facetracker.exe
+  modelPath: Assets/StreamingAssets/OpenSeeFace/models
   commandlineOptions:
   - --silent
   - 1
   - --max-threads
   - 1
-  extraOptions: -i 127.0.0.1 -p 11573 -v 0 --model 2 -W 1280 -H 720 -F 30 --use-dshowcapture
-    1
+  extraOptions: '-c 0 -i 127.0.0.1 -p 11573 -v 0 --model 2 -W 1280 -H 720 -F 30 --use-dshowcapture
+    0 '
   logCommandline: 0
   usePinvoke: 0
   usePinvokeListCameras: 0
