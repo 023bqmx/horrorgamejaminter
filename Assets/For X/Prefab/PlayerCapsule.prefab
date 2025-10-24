@@ -2548,10 +2548,6 @@ PrefabInstance:
       propertyPath: aimCamera
       value: 
       objectReference: {fileID: 1765933032250481855}
-    - target: {fileID: 3843639007672482180, guid: 6e6f93b9d0a8fa44aa9afa9738841bbe, type: 3}
-      propertyPath: maxIntensity
-      value: 120
-      objectReference: {fileID: 0}
     - target: {fileID: 4682551419774998077, guid: 6e6f93b9d0a8fa44aa9afa9738841bbe, type: 3}
       propertyPath: m_Name
       value: Flashlight
