@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public static class GameData
+public class GameData : MonoBehaviour 
 {
-    public static int Digit1;
-    public static int Digit2;
-    public static int Digit3;
+    [SerializeField] public int Digit1;
+    [SerializeField] public int Digit2;
+    [SerializeField] public int Digit3;
 }

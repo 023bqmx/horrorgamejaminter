@@ -15,29 +15,41 @@ public class FaceIcon : MonoBehaviour
     [Header("Vertical Fill (bottom->top)")]
     [SerializeField] private Image normalFill; // child Image ของ normalFace (Type=Filled Vertical Bottom)
     [SerializeField] private Image smileFill;  // child Image ของ smileFace  (Type=Filled Vertical Bottom)
-    [SerializeField, Tooltip("ทำให้ระดับหลอดไหลลื่นขึ้น")]
-    private bool smoothFill = true;
-    [SerializeField, Tooltip("ความไวการไหล (สูง=ไว)")]
-    private float fillLerp = 12f;
+    [SerializeField] private bool smoothFill = true;
+    [SerializeField] private float fillLerp = 12f;
 
-    [Header("Shake FX (last 30%)")]
-    [SerializeField, Tooltip("เริ่มสั่นเมื่อเติมสีถึงสัดส่วนนี้ขึ้นไป (0..1)")]
-    private float shakeStartFill = 0.70f;      // 70% = ช่วง 30% สุดท้าย
-    [SerializeField, Tooltip("แรงสั่นสูงสุด (พิกเซล)")]
-    private float shakeAmplitude = 8f;
-    [SerializeField, Tooltip("ความถี่การสั่น (Hz-ish)")]
-    private float shakeFrequency = 18f;
-    [SerializeField, Tooltip("ความไวในการคืนตำแหน่งฐาน")]
-    private float shakeReturnLerp = 15f;
+    [Header("Shake FX (last N%)")]
+    [SerializeField, Tooltip("เริ่มสั่นเมื่อเติมสีถึงสัดส่วนนี้ขึ้นไป (0..1). 0.55 = ช่วงท้าย 45%")]
+    private float shakeStartFill = 0.55f;
+    [SerializeField] private float shakeAmplitude = 8f;
+    [SerializeField] private float shakeFrequency = 18f;
+    [SerializeField] private float shakeReturnLerp = 15f;
+
+    [Header("Audio (plug clips + sources in Inspector)")]
+    [SerializeField] private AudioSource trendSource;      // สำหรับขึ้น/ลง
+    [SerializeField] private AudioClip riseLoop;           // ยิ้มค้าง  แท่งขึ้น (แดงเพิ่ม)
+    [SerializeField] private AudioClip fallLoop;           // เลิกยิ้ม  แท่งลง (แดงลด)
+    [SerializeField] private float trendBaseVolume = 0.6f;
+    [SerializeField] private float trendMaxExtraVolume = 0.4f; // เพิ่มตามความเร็วการเปลี่ยน
+    [SerializeField] private float trendPitch = 1f;
+    [SerializeField] private float trendVolumeLerp = 10f;
+
+    [SerializeField] private AudioSource shakeSource;      // สำหรับสั่น
+    [SerializeField] private AudioClip shakeLoop;
+    [SerializeField] private float shakeBaseVolume = 0.45f;
+    [SerializeField] private float shakeVolumeLerp = 10f;
 
     public bool IsTracking => face && face.isTracking;
 
     float _currentFill; // 0..1 (0 = ไม่แดง, 1 = แดงเต็ม)
+    float _prevFill;
 
-    // cache rects & base positions เพื่อกัน drift ตอนสลับหน้า
     RectTransform _normalRect, _smileRect;
     Vector2 _basePosNormal, _basePosSmile;
     float _shakeSeed;
+
+    enum Trend { Idle, Rising, Falling }
+    Trend _trend = Trend.Idle;
 
     void Reset()
     {
@@ -51,22 +63,24 @@ public class FaceIcon : MonoBehaviour
         SetupFillImage(normalFill);
         SetupFillImage(smileFill);
 
-        // กันลืม: บังคับ alpha = 1 และไม่รับ Raycast
         if (normalFill) { var c = normalFill.color; normalFill.color = new Color(c.r, c.g, c.b, 1f); normalFill.raycastTarget = false; }
         if (smileFill) { var c = smileFill.color; smileFill.color = new Color(c.r, c.g, c.b, 1f); smileFill.raycastTarget = false; }
 
         _currentFill = 0f;
+        _prevFill = _currentFill;
         ApplyFillInstant(_currentFill);
 
-        // cache rects & base positions
         _normalRect = normalFace ? normalFace.GetComponent<RectTransform>() : null;
         _smileRect = smileFace ? smileFace.GetComponent<RectTransform>() : null;
         _basePosNormal = _normalRect ? _normalRect.anchoredPosition : Vector2.zero;
         _basePosSmile = _smileRect ? _smileRect.anchoredPosition : Vector2.zero;
 
         _shakeSeed = Random.value * 1000f;
-
         EnsureFillOnTop();
+
+        // mute & stop audio at boot
+        SafeStop(trendSource);
+        SafeStop(shakeSource);
     }
 
     void Update()
@@ -77,40 +91,114 @@ public class FaceIcon : MonoBehaviour
             SetActiveSafe(smileFace, false);
             SetActiveSafe(normalFace, true);
             SetFillAmount(0f, instant: true);
-
-            // reset shake positions on tracking loss
             ResetToBasePositions();
             EnsureFillOnTop();
+
+            // kill audio on tracking lost
+            StopAllAudioImmediate();
+            _prevFill = _currentFill;
             return;
         }
 
         SetActiveSafe(trackingLost, false);
 
         bool gatedSmile = smileGate && smileGate.isSmiling;
-        float charge01 = (smileGate ? smileGate.charge01 : 1f); // 1=ขาว, 0=แดง
-        float targetFill = 1f - Mathf.Clamp01(charge01);         // 0..1 (แดงจากล่างขึ้นบน)
+        float charge01 = (smileGate ? smileGate.charge01 : 1f);
+        float targetFill = 1f - Mathf.Clamp01(charge01);
 
-        // สลับหน้า
+        // swap face
         SetActiveSafe(smileFace, gatedSmile);
         SetActiveSafe(normalFace, !gatedSmile);
-
         EnsureFillOnTop();
 
-        // อัปเดตหลอดแดง
+        // update fill & shake
         SetFillAmount(targetFill, instant: !smoothFill);
+        UpdateShake(_currentFill, gatedSmile);
 
-        // อัปเดตเอฟเฟกต์สั่น (สั่นเฉพาะช่วงท้าย ๆ)
-        UpdateShake(targetFill, gatedSmile);
+        //  AUDIO: trend + shake
+        UpdateAudio(_currentFill, _prevFill);
+
+        _prevFill = _currentFill;
     }
 
-    // =============== Shake ===============
+    // ===================== AUDIO =====================
+    void UpdateAudio(float fillNow, float fillPrev)
+    {
+        float delta = fillNow - fillPrev; // >0 = ขึ้น(แดงเพิ่ม), <0 = ลง(แดงลด)
+        float eps = 0.0005f;
+
+        // --- Trend state (Rising / Falling / Idle) ---
+        Trend newTrend = Trend.Idle;
+        if (delta > eps) newTrend = Trend.Rising;
+        else if (delta < -eps) newTrend = Trend.Falling;
+
+        if (newTrend != _trend)
+        {
+            // สลับคลิปลูปตาม trend
+            switch (newTrend)
+            {
+                case Trend.Rising: PlayLoop(trendSource, riseLoop); break;
+                case Trend.Falling: PlayLoop(trendSource, fallLoop); break;
+                default: /* Idle */                                    break;
+            }
+            _trend = newTrend;
+        }
+
+        // วอลุ่ม/พิทช์ trend: เฟดตาม speed (ต่อวินาที)
+        if (trendSource)
+        {
+            float speedPerSec = Mathf.Abs(delta) / Mathf.Max(0.0001f, Time.deltaTime); // 0..?
+            float speed01 = Mathf.Clamp01(speedPerSec * 1.25f); // ไถลให้เข้า 0..1 เร็วขึ้นหน่อย
+            float targetVol = (_trend == Trend.Idle) ? 0f : (trendBaseVolume + trendMaxExtraVolume * speed01);
+            trendSource.volume = Mathf.Lerp(trendSource.volume, targetVol, Time.deltaTime * trendVolumeLerp);
+            trendSource.pitch = trendPitch;
+
+            // ถ้า idle & เล็กมาก ให้ stop เพื่อลดภาระ
+            if (_trend == Trend.Idle && trendSource.volume < 0.02f) SafeStop(trendSource);
+        }
+
+        // --- Shake layer ---
+        float tShake = Mathf.Clamp01(Mathf.InverseLerp(shakeStartFill, 1f, fillNow)); // 0..1
+        if (tShake > 0f && shakeSource && shakeLoop)
+            PlayLoop(shakeSource, shakeLoop);
+
+        if (shakeSource)
+        {
+            float targetVol = (tShake > 0f) ? (shakeBaseVolume * Mathf.Pow(tShake, 1.1f)) : 0f;
+            shakeSource.volume = Mathf.Lerp(shakeSource.volume, targetVol, Time.deltaTime * shakeVolumeLerp);
+            if (tShake <= 0f && shakeSource.volume < 0.02f) SafeStop(shakeSource);
+        }
+    }
+
+    void PlayLoop(AudioSource src, AudioClip clip)
+    {
+        if (!src || !clip) return;
+        if (src.clip != clip) { src.clip = clip; src.loop = true; src.Play(); }
+        else if (!src.isPlaying) src.Play();
+    }
+
+    void SafeStop(AudioSource src)
+    {
+        if (!src) return;
+        src.Stop();
+        src.clip = src.clip; // no-op; keeps assignment
+    }
+
+    void StopAllAudioImmediate()
+    {
+        SafeStop(trendSource);
+        SafeStop(shakeSource);
+        if (trendSource) trendSource.volume = 0f;
+        if (shakeSource) shakeSource.volume = 0f;
+    }
+
+    // ===================== SHAKE =====================
     void UpdateShake(float fill01, bool showingSmile)
     {
-        // เลือก rect ปัจจุบันที่กำลังแสดง และทรงจำตำแหน่งฐาน
         RectTransform active = showingSmile ? _smileRect : _normalRect;
         RectTransform inactive = showingSmile ? _normalRect : _smileRect;
 
-        if (inactive) // คืน inactive ให้กลับ base ทันที ป้องกันค้าง offset
+        if (inactive)
         {
             Vector2 basePos = ReferenceBase(inactive);
             inactive.anchoredPosition = Vector2.Lerp(inactive.anchoredPosition, basePos, 1f - Mathf.Exp(-shakeReturnLerp * Time.deltaTime));
@@ -118,24 +206,15 @@ public class FaceIcon : MonoBehaviour
 
         if (!active) return;
 
-        float t = Mathf.InverseLerp(shakeStartFill, 1f, fill01); // 0..1 เข้าสู่ช่วงสั่น
-        t = Mathf.Clamp01(t);
-
+        float t = Mathf.Clamp01(Mathf.InverseLerp(shakeStartFill, 1f, fill01));
         Vector2 targetPos = ReferenceBase(active);
 
         if (t > 0f)
         {
-            // amplitude scale โค้งขึ้นเล็กน้อยตอนใกล้หมด (t^1.2)
             float amp = shakeAmplitude * Mathf.Pow(t, 1.2f);
-
-            // Perlin noise 2D เพื่อความลื่น
             float nX = (Mathf.PerlinNoise(_shakeSeed, Time.time * shakeFrequency) - 0.5f) * 2f;
             float nY = (Mathf.PerlinNoise(_shakeSeed + 77f, Time.time * shakeFrequency) - 0.5f) * 2f;
-
-            Vector2 offset = new Vector2(nX, nY) * amp;
-
-            // ไล่เข้าหาตำแหน่งเป้าหมาย + offset อย่างลื่น
-            targetPos += offset;
+            targetPos += new Vector2(nX, nY) * amp;
         }
 
         active.anchoredPosition = Vector2.Lerp(active.anchoredPosition, targetPos, 1f - Mathf.Exp(-shakeReturnLerp * Time.deltaTime));
@@ -155,7 +234,7 @@ public class FaceIcon : MonoBehaviour
         if (_smileRect) _smileRect.anchoredPosition = _basePosSmile;
     }
 
-    // =============== Fill helpers ===============
+    // ===================== FILL =====================
     void EnsureFillOnTop()
     {
         if (smileFill && smileFill.transform.parent) smileFill.transform.SetAsLastSibling();
@@ -179,7 +258,7 @@ public class FaceIcon : MonoBehaviour
         }
         else
         {
-            float k = 1f - Mathf.Exp(-fillLerp * Time.deltaTime); // exp-smooth
+            float k = 1f - Mathf.Exp(-fillLerp * Time.deltaTime);
             _currentFill = Mathf.Lerp(_currentFill, target, k);
         }
         ApplyFillInstant(_currentFill);

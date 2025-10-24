@@ -12,180 +12,197 @@ public class RollingNumberMachine : MonoBehaviour
     public TextMeshProUGUI resultText1;
     public TextMeshProUGUI resultText2;
 
+    [Header("Data")]
+    [Tooltip("ใส่ GameData จาก Inspector ได้เลย (ถ้าไม่ใส่จะพยายามหาในตัวเอง)")]
+    public GameData gameData;
+
     [Header("Rolling Settings")]
-    [Tooltip("Total time before the first digit starts stopping")]
+    [Tooltip("เวลารวมก่อนเริ่มหยุดหลักแรก")]
     public float rollDuration = 3f;
-    [Tooltip("Delay between each digit stopping")]
+    [Tooltip("ดีเลย์หยุดระหว่างแต่ละหลัก")]
     public float stopDelay = 0.4f;
-    [Tooltip("How fast the digits change")]
+    [Tooltip("ความถี่การเปลี่ยนตัวเลข (วินาที/ครั้ง)")]
     public float rollSpeed = 0.05f;
 
-    [Header("UI Fade Settings")]
-    [Tooltip("How long to wait before hiding the UI after rolling stops")]
+    [Header("UI Anim/Fade")]
+    [Tooltip("เวลา pop-in UI")]
+    public float popInDuration = 0.25f;
+    [Tooltip("รอก่อนซ่อน UI หลังโชว์ผล")]
     public float hideDelay = 1.5f;
-    [Tooltip("How fast the UI fades out")]
+    [Tooltip("เวลา fade-out UI")]
     public float fadeOutDuration = 0.5f;
-    [Tooltip("How long each result text fades in")]
+    [Tooltip("เวลา fade-in ของ result แต่ละอัน")]
     public float resultFadeDuration = 0.6f;
-    [Tooltip("Delay between resultText1 and resultText2 fade-ins")]
+    [Tooltip("ดีเลย์คั่นระหว่าง resultText1 -> resultText2")]
     public float resultGapDelay = 0.4f;
-    [Tooltip("Delay before showing the first result text after rolling stops")]
+    [Tooltip("รอก่อนเริ่มโชว์ผลหลังหมุนหยุด")]
     public float resultStartDelay = 0.6f;
 
     [Header("Audio (voice after Digit3 starts)")]
-    public AudioSource voiceSource;     // ลาก AudioSource มาใส่
-    public AudioClip voiceClip;         // ลากไฟล์เสียงที่มีอยู่แล้ว
-    [Range(0f,1f)] public float voiceVolume = 1f;
+    public AudioSource voiceSource;
+    public AudioClip voiceClip;
+    [Range(0f, 1f)] public float voiceVolume = 1f;
     public bool playOneShot = true;
-    [Tooltip("ดีเลย์เล็กน้อยหลัง Digit3 เริ่ม ก่อนเล่นเสียง (ถ้าไม่ต้องการให้ใส่ 0)")]
+    [Tooltip("ดีเลย์เล็กน้อยหลัง 'เริ่ม' Digit3 ก่อนเล่นเสียง")]
     public float voiceDelayAfterDigit3Start = 0f;
 
     private bool isRolling = false;
+    private bool d1Done, d2Done, d3Done;
     private CanvasGroup canvasGroup;
 
     void Awake()
     {
-        // Ensure CanvasGroup exists
+        if (!numberSlotUI) { Debug.LogError("[RollingNumberMachine] numberSlotUI is null"); enabled = false; return; }
+
         canvasGroup = numberSlotUI.GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
-            canvasGroup = numberSlotUI.AddComponent<CanvasGroup>();
+        if (!canvasGroup) canvasGroup = numberSlotUI.AddComponent<CanvasGroup>();
         canvasGroup.alpha = 0f;
 
-        // Hide result texts initially
-        SetTextAlpha(resultText1, 0);
-        SetTextAlpha(resultText2, 0);
+        if (!gameData) gameData = GetComponent<GameData>();
+
+        SetTextAlpha(resultText1, 0f);
+        SetTextAlpha(resultText2, 0f);
+        numberSlotUI.SetActive(false);
     }
 
     public void TriggerRoll()
     {
-        if (!isRolling)
-            StartCoroutine(RollSequence());
+        if (isRolling) return;
+        StartCoroutine(RollSequence());
     }
 
     private IEnumerator RollSequence()
     {
         isRolling = true;
+        d1Done = d2Done = d3Done = false;
 
-        // Show UI with pop-in + fade-in
+        // --- pop-in ---
         numberSlotUI.SetActive(true);
         numberSlotUI.transform.localScale = Vector3.zero;
 
-        float popTime = 0.25f;
-        float t = 0;
-        while (t < popTime)
+        float t = 0f;
+        while (t < popInDuration)
         {
             t += Time.deltaTime;
-            numberSlotUI.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, t / popTime);
-            canvasGroup.alpha = Mathf.Lerp(0, 1, t / popTime);
+            float k = t / popInDuration;
+            numberSlotUI.transform.localScale = Vector3.LerpUnclamped(Vector3.zero, Vector3.one, k);
+            canvasGroup.alpha = Mathf.Lerp(0f, 1f, k);
             yield return null;
         }
+        numberSlotUI.transform.localScale = Vector3.one;
+        canvasGroup.alpha = 1f;
 
-        // Start rolling all digits
-        StartCoroutine(RollDigit(digit1, rollDuration + 0 * stopDelay));
-        StartCoroutine(RollDigit(digit2, rollDuration + 1 * stopDelay));
-        StartCoroutine(RollDigit(digit3, rollDuration + 2 * stopDelay));
+        // --- start rolling all digits ---
+        StartCoroutine(RollDigit(digit1, rollDuration + 0f * stopDelay, () => d1Done = true));
+        StartCoroutine(RollDigit(digit2, rollDuration + 1f * stopDelay, () => d2Done = true));
+        StartCoroutine(RollDigit(digit3, rollDuration + 2f * stopDelay, () => d3Done = true));
 
-        // >>> เล่นเสียง "หลังจากขึ้น Digit3" (เริ่มหมุนตัวที่สาม) <<<
-        if (voiceSource != null && voiceClip != null)
+        // --- voice: after digit3 has STARTED ---
+        if (voiceSource && voiceClip)
         {
             if (voiceDelayAfterDigit3Start > 0f)
                 yield return new WaitForSeconds(voiceDelayAfterDigit3Start);
 
             if (playOneShot) voiceSource.PlayOneShot(voiceClip, voiceVolume);
-            else
-            {
-                voiceSource.clip = voiceClip;
-                voiceSource.volume = voiceVolume;
-                voiceSource.Play();
-            }
+            else { voiceSource.clip = voiceClip; voiceSource.volume = voiceVolume; voiceSource.Play(); }
         }
 
-        // Wait until all digits finish rolling
-        yield return new WaitForSeconds(rollDuration + 2 * stopDelay);
+        // --- wait until all digits finished (robust vs. drift) ---
+        yield return new WaitUntil(() => d1Done && d2Done && d3Done);
 
-        // ✅ Save all 3 digits globally once everything stops
-        GameData.Digit1 = int.Parse(digit1.text);
-        GameData.Digit2 = int.Parse(digit2.text);
-        GameData.Digit3 = int.Parse(digit3.text);
+        // --- save result (guard null) ---
+        int v1 = SafeParse(digit1);
+        int v2 = SafeParse(digit2);
+        int v3 = SafeParse(digit3);
 
-        Debug.Log($"[Saved Result] {GameData.Digit1}{GameData.Digit2}{GameData.Digit3}");
+        if (gameData)
+        {
+            gameData.Digit1 = v1;
+            gameData.Digit2 = v2;
+            gameData.Digit3 = v3;
+        }
+        Debug.Log($"[Saved Result] {v1}{v2}{v3}");
 
-        // Wait a moment before showing result
+        // --- show result texts ---
         yield return new WaitForSeconds(resultStartDelay);
-
-
-        // Show result texts one by one
         yield return StartCoroutine(FadeInResult(resultText1));
         yield return new WaitForSeconds(resultGapDelay);
         yield return StartCoroutine(FadeInResult(resultText2));
 
-        // Wait before hiding
+        // --- hide & reset ---
         yield return new WaitForSeconds(hideDelay);
-
-        // Fade out all together
         yield return StartCoroutine(FadeOutUI());
 
         isRolling = false;
     }
 
-    private IEnumerator RollDigit(TextMeshProUGUI digitText, float rollTime)
+    private IEnumerator RollDigit(TextMeshProUGUI digitText, float rollTime, System.Action onDone)
     {
+        if (!digitText) { onDone?.Invoke(); yield break; }
+
         float elapsed = 0f;
         while (elapsed < rollTime)
         {
             digitText.text = Random.Range(0, 10).ToString();
-            yield return new WaitForSeconds(rollSpeed);
-            elapsed += rollSpeed;
+            float step = Mathf.Max(0.0001f, rollSpeed);
+            yield return new WaitForSeconds(step);
+            elapsed += step;
         }
 
-        // Final number
-        // Final number
+        // final settle
         digitText.text = Random.Range(0, 10).ToString();
-
+        onDone?.Invoke();
     }
 
     private IEnumerator FadeInResult(TextMeshProUGUI text)
     {
-        float elapsed = 0;
-        SetTextAlpha(text, 0);
+        if (!text) yield break;
+
+        float elapsed = 0f;
+        SetTextAlpha(text, 0f);
 
         while (elapsed < resultFadeDuration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(0, 1, elapsed / resultFadeDuration);
-            SetTextAlpha(text, alpha);
+            float a = Mathf.Clamp01(elapsed / resultFadeDuration);
+            SetTextAlpha(text, a);
             yield return null;
         }
-
-        SetTextAlpha(text, 1);
-        yield break;
+        SetTextAlpha(text, 1f);
     }
 
     private IEnumerator FadeOutUI()
     {
-        float elapsed = 0;
-        float startAlpha = canvasGroup.alpha;
+        float elapsed = 0f;
+        float startAlpha = canvasGroup ? canvasGroup.alpha : 1f;
 
         while (elapsed < fadeOutDuration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(startAlpha, 0, elapsed / fadeOutDuration);
-            canvasGroup.alpha = alpha;
-            SetTextAlpha(resultText1, alpha);
-            SetTextAlpha(resultText2, alpha);
+            float a = Mathf.Lerp(startAlpha, 0f, elapsed / fadeOutDuration);
+            if (canvasGroup) canvasGroup.alpha = a;
+            SetTextAlpha(resultText1, a);
+            SetTextAlpha(resultText2, a);
             yield return null;
         }
 
-        canvasGroup.alpha = 0;
+        if (canvasGroup) canvasGroup.alpha = 0f;
         numberSlotUI.SetActive(false);
+
+        // reset result alphas soรอบหน้าเริ่มที่ 0
+        SetTextAlpha(resultText1, 0f);
+        SetTextAlpha(resultText2, 0f);
     }
 
     private void SetTextAlpha(TextMeshProUGUI text, float alpha)
     {
-        if (text == null) return;
-        Color c = text.color;
-        c.a = alpha;
-        text.color = c;
+        if (!text) return;
+        var c = text.color; c.a = alpha; text.color = c;
+    }
+
+    private int SafeParse(TextMeshProUGUI text)
+    {
+        if (!text) return 0;
+        return int.TryParse(text.text, out var v) ? v : 0;
     }
 }
-    
