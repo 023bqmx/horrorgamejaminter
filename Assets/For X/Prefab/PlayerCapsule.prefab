@@ -2548,6 +2548,14 @@ PrefabInstance:
       propertyPath: aimCamera
       value: 
       objectReference: {fileID: 1765933032250481855}
+    - target: {fileID: 3843639007672482180, guid: 6e6f93b9d0a8fa44aa9afa9738841bbe, type: 3}
+      propertyPath: useBattery
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3843639007672482180, guid: 6e6f93b9d0a8fa44aa9afa9738841bbe, type: 3}
+      propertyPath: batterySeconds
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 4682551419774998077, guid: 6e6f93b9d0a8fa44aa9afa9738841bbe, type: 3}
       propertyPath: m_Name
       value: Flashlight
@@ -2656,7 +2664,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7415384113222922130, guid: 87d8a8bc84bb84a4b9a41f1e98c288ae, type: 3}
       propertyPath: cooldownSeconds
-      value: 5
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 7415384113222922130, guid: 87d8a8bc84bb84a4b9a41f1e98c288ae, type: 3}
       propertyPath: maxSmileSeconds

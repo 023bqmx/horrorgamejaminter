@@ -52,6 +52,36 @@ public class AIController : MonoBehaviour
     [SerializeField] float ignoreResumeDelay = 6f;   // เวลาหน่วงหลังยิ้ม
     Coroutine resumePatrolRoutine;                   // handle ของ coroutine
 
+    [Header("Footsteps")]
+    public AudioSource footSrc;              // ใส่ AudioSource (3D, playOnAwake=false, loop=false)
+    public AudioClip[] footClips;            // คลิปเท้า 2–6 คลิปกำลังดี
+    [Tooltip("ถือว่าเดินเมื่อเร็วเกินค่านี้ (m/s)")]
+    public float stepSpeedThreshold = 0.1f;  // กันค่ากระพริบ
+    [Tooltip("จำนวนก้าว/วินาที ที่ความเร็วเดิน (walkSpeed)")]
+    public float walkStepRate = 1.8f;
+    [Tooltip("จำนวนก้าว/วินาที ที่ความเร็ววิ่ง (runSpeed)")]
+    public float runStepRate = 3.2f;
+
+    [Tooltip("ช่วงความดังของแต่ละก้าว (จะคูณตามความเร็วด้วย)")]
+    public Vector2 stepVolumeRange = new Vector2(0.6f, 1.0f);
+    [Tooltip("ช่วง pitch เวลาเดิน")]
+    public Vector2 pitchWalkRange = new Vector2(0.95f, 1.05f);
+    [Tooltip("ช่วง pitch เวลา วิ่ง")]
+    public Vector2 pitchRunRange = new Vector2(1.05f, 1.15f);
+
+    float _stepTimer = 0f;
+    int _lastStepIndex = -1;
+
+    [Header("Footstep 3D Attenuation")]
+    [SerializeField] AudioRolloffMode footRolloff = AudioRolloffMode.Logarithmic;
+    [SerializeField] float footMinDistance = 1.8f;
+    [SerializeField] float footMaxDistance = 22f;
+    [SerializeField] bool zeroDoppler = true;
+    private void Awake()
+    {
+        ConfigureFootAudio3D();
+    }
+
     void Start()
     {
         Player = FirstPersonController.Instance ? FirstPersonController.Instance.gameObject : Player;
@@ -181,6 +211,7 @@ public class AIController : MonoBehaviour
 
         UpdateLocomotionBySpeed();  // ย้ายให้มาก่อน
         UpdateAnim();               // แล้วค่อยป้อนพารามิเตอร์
+        UpdateFootsteps();
     }
 
     void UpdateAnim()
@@ -328,7 +359,67 @@ public class AIController : MonoBehaviour
         ResumePatrol(pickClosest);
         resumePatrolRoutine = null;
     }
+    void UpdateFootsteps()
+    {
+        if (footSrc == null || footClips == null || footClips.Length == 0 || agent == null) return;
 
+        // ใช้ "ความเร็วจริง" ของเอเจนต์ (แกน Y ตัดออก)
+        Vector3 v = agent.velocity;
+        v.y = 0f;
+        float speed = v.magnitude;
+
+        // ไม่เดิน/ถูกหยุด/ช้ามาก -> ไม่เล่น
+        if (!agent.isOnNavMesh || agent.isStopped || speed <= stepSpeedThreshold)
+        {
+            _stepTimer = 0f;        // รีเซ็ตจะได้ไม่ยิงซ้อนทันทีตอนเริ่มเดินใหม่
+            return;
+        }
+
+        // สเกลอัตราก้าวตามความเร็ว 0..runSpeed
+        float t = Mathf.Clamp01(speed / Mathf.Max(0.01f, runSpeed)); // 0=ช้า, 1=เร็วสุด
+        float stepsPerSec = Mathf.Lerp(walkStepRate, runStepRate, t);
+        float period = 1f / Mathf.Max(0.01f, stepsPerSec);
+
+        _stepTimer += Time.deltaTime;
+        if (_stepTimer >= period)
+        {
+            _stepTimer -= period;
+            PlayFootstep(t);
+        }
+    }
+
+    void PlayFootstep(float speed01)
+    {
+        // สุ่มคลิปแบบไม่ให้ซ้ำกับก้าวก่อนหน้า
+        int idx = 0;
+        if (footClips.Length == 1) idx = 0;
+        else
+        {
+            do { idx = Random.Range(0, footClips.Length); }
+            while (idx == _lastStepIndex);
+        }
+        _lastStepIndex = idx;
+
+        // volume/pitch ไล่ตามความเร็ว (เดิน -> วิ่ง)
+        float volBase = Mathf.Lerp(stepVolumeRange.x, stepVolumeRange.y, speed01);
+        float pitchWalk = Random.Range(pitchWalkRange.x, pitchWalkRange.y);
+        float pitchRun = Random.Range(pitchRunRange.x, pitchRunRange.y);
+        float pitch = Mathf.Lerp(pitchWalk, pitchRun, speed01);
+
+        footSrc.pitch = pitch;
+        footSrc.PlayOneShot(footClips[idx], volBase);
+    }
+
+    void ConfigureFootAudio3D()
+    {
+        if (!footSrc) return;
+        footSrc.spatialBlend = 1f;                         // 3D
+        footSrc.rolloffMode = footRolloff;                 // Logarithmic/Custom
+        footSrc.minDistance = footMinDistance;
+        footSrc.maxDistance = footMaxDistance;
+        if (zeroDoppler) footSrc.dopplerLevel = 0f;        // ตัด Doppler
+                                                           // ถ้าใช้ Custom rolloff: footSrc.SetCustomCurve(AudioSourceCurveType.CustomRolloff, yourCurve);
+    }
     void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(1f, .9f, 0f, .25f);
