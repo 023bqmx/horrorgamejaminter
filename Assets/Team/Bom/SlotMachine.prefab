@@ -221,6 +221,7 @@ GameObject:
   m_Component:
   - component: {fileID: 996505285794124616}
   - component: {fileID: 4360436743536056054}
+  - component: {fileID: 9187331232844595123}
   m_Layer: 0
   m_Name: GameData
   m_TagString: Untagged
@@ -258,6 +259,18 @@ MonoBehaviour:
   Digit1: 0
   Digit2: 0
   Digit3: 0
+--- !u!114 &9187331232844595123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2249376349558748972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42819027b2d7b8a4596542a8b2fb99dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2564355699990492994
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,6 +350,7 @@ MonoBehaviour:
   rollDuration: 1
   stopDelay: 0.5
   rollSpeed: 0.05
+  popInDuration: 0.25
   hideDelay: 4
   fadeOutDuration: 2
   resultFadeDuration: 0.5
