@@ -49,7 +49,7 @@ public class AIController : MonoBehaviour
     const float WALK_EXIT = 0.10f;   // ตกต่ำกว่านี้กลับไป Idle
 
 
-    [SerializeField] float ignoreResumeDelay = 2f;   // เวลาหน่วงหลังยิ้ม
+    [SerializeField] float ignoreResumeDelay = 6f;   // เวลาหน่วงหลังยิ้ม
     Coroutine resumePatrolRoutine;                   // handle ของ coroutine
 
     void Start()

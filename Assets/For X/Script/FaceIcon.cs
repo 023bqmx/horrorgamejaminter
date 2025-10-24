@@ -25,7 +25,7 @@ public class FaceIcon : MonoBehaviour
     [SerializeField] private float shakeFrequency = 18f;
     [SerializeField] private float shakeReturnLerp = 15f;
 
-    [Header("Audio (plug clips + sources in Inspector)")]
+    [Header("Audio (trend & shake)")]
     [SerializeField] private AudioSource trendSource;      // สำหรับขึ้น/ลง
     [SerializeField] private AudioClip riseLoop;           // ยิ้มค้าง  แท่งขึ้น (แดงเพิ่ม)
     [SerializeField] private AudioClip fallLoop;           // เลิกยิ้ม  แท่งลง (แดงลด)
@@ -38,6 +38,17 @@ public class FaceIcon : MonoBehaviour
     [SerializeField] private AudioClip shakeLoop;
     [SerializeField] private float shakeBaseVolume = 0.45f;
     [SerializeField] private float shakeVolumeLerp = 10f;
+
+    // NEW: ----- Full bar SFX -----
+    [Header("Audio (full bar SFX)")]
+    [SerializeField] private AudioSource sfxSource;        // ยิง one-shot
+    [SerializeField] private AudioClip fullFillSfx;        // คลิปเสียงตอนเต็มหลอด
+    [SerializeField, Range(0f, 1f)] private float fullFillVolume = 1f;
+    [SerializeField, Tooltip("ทริกเกอร์เมื่อ fill ข้ามค่านี้ขึ้นไป (ใกล้ 1 = ต้องเกือบเต็มจริง)")]
+    [Range(0.9f, 1f)] private float fullFillThreshold = 0.995f;
+    [SerializeField, Tooltip("กันสแปม: เวลาขั้นต่ำระหว่างการยิงซ้ำ")]
+    private float fullSfxCooldown = 0.5f;
+    float _lastFullSfxTime = -999f;                         // NEW
 
     public bool IsTracking => face && face.isTracking;
 
@@ -94,7 +105,6 @@ public class FaceIcon : MonoBehaviour
             ResetToBasePositions();
             EnsureFillOnTop();
 
-            // kill audio on tracking lost
             StopAllAudioImmediate();
             _prevFill = _currentFill;
             return;
@@ -115,10 +125,32 @@ public class FaceIcon : MonoBehaviour
         SetFillAmount(targetFill, instant: !smoothFill);
         UpdateShake(_currentFill, gatedSmile);
 
-        //  AUDIO: trend + shake
+        // NEW: ยิง SFX ตอน "ข้าม" เกณฑ์เต็มหลอดจากด้านล่างขึ้นบน
+        TryPlayFullSfx(_currentFill, _prevFill);
+
+        // AUDIO: trend + shake
         UpdateAudio(_currentFill, _prevFill);
 
         _prevFill = _currentFill;
+    }
+
+    // =============== FULL BAR SFX (NEW) ===============
+    void TryPlayFullSfx(float fillNow, float fillPrev)
+    {
+        if (!sfxSource || !fullFillSfx) return;
+
+        // ทริกเกอร์เฉพาะตอน "ข้ามเกณฑ์" จากด้านล่าง -> ด้านบน (กันยิงซ้ำตอนค้างที่ 1.0)
+        if (fillPrev < fullFillThreshold && fillNow >= fullFillThreshold)
+        {
+            if (Time.time - _lastFullSfxTime >= fullSfxCooldown)
+            {
+                sfxSource.PlayOneShot(fullFillSfx, fullFillVolume);
+                _lastFullSfxTime = Time.time;
+            }
+        }
+
+        // (ออปชัน) จะรีเซ็ต _lastFullSfxTime เมื่อ fill ลดลงต่ำกว่าเกณฑ์เยอะ ๆ ก็ได้
+        // ไม่จำเป็น เพราะเราเช็ค crossing อยู่แล้ว
     }
 
     // ===================== AUDIO =====================
@@ -127,40 +159,37 @@ public class FaceIcon : MonoBehaviour
         float delta = fillNow - fillPrev; // >0 = ขึ้น(แดงเพิ่ม), <0 = ลง(แดงลด)
         float eps = 0.0005f;
 
-        // --- Trend state (Rising / Falling / Idle) ---
+        // Trend state
         Trend newTrend = Trend.Idle;
         if (delta > eps) newTrend = Trend.Rising;
         else if (delta < -eps) newTrend = Trend.Falling;
 
         if (newTrend != _trend)
         {
-            // สลับคลิปลูปตาม trend
             switch (newTrend)
             {
                 case Trend.Rising: PlayLoop(trendSource, riseLoop); break;
                 case Trend.Falling: PlayLoop(trendSource, fallLoop); break;
-                default: /* Idle */                                    break;
+                default: break;
             }
             _trend = newTrend;
         }
 
-        // วอลุ่ม/พิทช์ trend: เฟดตาม speed (ต่อวินาที)
+        // Trend vol/pitch
         if (trendSource)
         {
-            float speedPerSec = Mathf.Abs(delta) / Mathf.Max(0.0001f, Time.deltaTime); // 0..?
-            float speed01 = Mathf.Clamp01(speedPerSec * 1.25f); // ไถลให้เข้า 0..1 เร็วขึ้นหน่อย
+            float speedPerSec = Mathf.Abs(delta) / Mathf.Max(0.0001f, Time.deltaTime);
+            float speed01 = Mathf.Clamp01(speedPerSec * 1.25f);
             float targetVol = (_trend == Trend.Idle) ? 0f : (trendBaseVolume + trendMaxExtraVolume * speed01);
             trendSource.volume = Mathf.Lerp(trendSource.volume, targetVol, Time.deltaTime * trendVolumeLerp);
             trendSource.pitch = trendPitch;
 
-            // ถ้า idle & เล็กมาก ให้ stop เพื่อลดภาระ
             if (_trend == Trend.Idle && trendSource.volume < 0.02f) SafeStop(trendSource);
         }
 
-        // --- Shake layer ---
-        float tShake = Mathf.Clamp01(Mathf.InverseLerp(shakeStartFill, 1f, fillNow)); // 0..1
-        if (tShake > 0f && shakeSource && shakeLoop)
-            PlayLoop(shakeSource, shakeLoop);
+        // Shake layer
+        float tShake = Mathf.Clamp01(Mathf.InverseLerp(shakeStartFill, 1f, fillNow));
+        if (tShake > 0f && shakeSource && shakeLoop) PlayLoop(shakeSource, shakeLoop);
 
         if (shakeSource)
         {
@@ -181,7 +210,6 @@ public class FaceIcon : MonoBehaviour
     {
         if (!src) return;
         src.Stop();
-        src.clip = src.clip; // no-op; keeps assignment
     }
 
     void StopAllAudioImmediate()
@@ -190,6 +218,7 @@ public class FaceIcon : MonoBehaviour
         SafeStop(shakeSource);
         if (trendSource) trendSource.volume = 0f;
         if (shakeSource) shakeSource.volume = 0f;
+        // sfxSource เป็น one-shot ไม่ต้อง stop
     }
 
     // ===================== SHAKE =====================
