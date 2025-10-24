@@ -99,7 +99,9 @@ public class AIController : MonoBehaviour
 
     void Update()
     {
-        ignorePlayer = IsSmilingInView();
+        ignorePlayer = (smileGate && smileGate.isSmiling)   // gated signal
+               && (trackingHealth && trackingHealth.isTracking)
+               && IsSmilingInView();
 
         // --- Vision ---
         canSee = false;
