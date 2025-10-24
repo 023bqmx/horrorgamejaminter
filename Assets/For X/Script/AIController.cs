@@ -1,4 +1,5 @@
 using StarterAssets;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -40,12 +41,16 @@ public class AIController : MonoBehaviour
     [SerializeField] string walkState = "Walk";
     [SerializeField] string runState = "Run";
 
-    readonly int IsChasingHash = Animator.StringToHash("IsChasing");
     readonly int SpeedHash = Animator.StringToHash("Speed");
     float smoothedSpeed = 0f;
+    bool prevIgnore, prevChasing;
     // ฮิสเทอรีซิสสำหรับ Idle/Walk
     const float WALK_ENTER = 0.20f;   // ต้อง > ค่านี้ถึงจะเดิน
     const float WALK_EXIT = 0.10f;   // ตกต่ำกว่านี้กลับไป Idle
+
+
+    [SerializeField] float ignoreResumeDelay = 2f;   // เวลาหน่วงหลังยิ้ม
+    Coroutine resumePatrolRoutine;                   // handle ของ coroutine
 
     void Start()
     {
@@ -57,20 +62,44 @@ public class AIController : MonoBehaviour
         agent.speed = walkSpeed;
         if (waypoints != null && waypoints.Length > 0)
             TrySetDestination(waypoints[wpIndex].position);
+
     }
 
     void LateUpdate()
     {
-        if (canSee && headObj && player)
+        if (!headObj || !player) return;
+
+        // อยู่ในกรวยมองเห็นแล้วค่อยหัน — จะเมินผู้เล่นอยู่ก็ยังหันได้
+        if (IsWithinViewCone(player))
         {
             headObj.LookAt(Player.transform);
         }
     }
+    bool IsWithinViewCone(Transform target)
+    {
+        var eye = headObj ? headObj.position : transform.position + Vector3.up * 1.6f;
+        var dir = target.position - eye;
+
+        // ระยะ
+        if (dir.sqrMagnitude > viewRadius * viewRadius) return false;
+
+        // มุม
+        var forward = headObj ? headObj.forward : transform.forward;
+        return Vector3.Angle(forward, dir.normalized) <= viewAngle * 0.5f;
+    }
+    bool IsSmilingInView()
+    {
+        if (!player) return false;
+        if (!(smileGate && smileGate.isSmiling)) return false;
+        if (!(trackingHealth && trackingHealth.isTracking)) return false;
+
+        // ต้องอยู่ใน viewRadius + viewAngle เท่านั้น (ไม่เช็คสิ่งกีดขวางตามที่ต้องการ)
+        return IsWithinViewCone(player);
+    }
 
     void Update()
     {
-        ignorePlayer = (smileGate && smileGate.isSmiling) &&
-                       (trackingHealth && trackingHealth.isTracking);
+        ignorePlayer = IsSmilingInView();
 
         // --- Vision ---
         canSee = false;
@@ -81,10 +110,32 @@ public class AIController : MonoBehaviour
             lastSeenTime = Time.time;
         }
 
-        // --- State update ---
-        if (ignorePlayer)
+        if (ignorePlayer && !prevIgnore)
         {
             chasing = false;
+
+            // หยุดเดินชั่วคราว แล้วตั้งเวลาค่อยกลับไปเดินเวย์พอยต์
+            agent.ResetPath();
+            agent.isStopped = true;
+            if (resumePatrolRoutine != null) StopCoroutine(resumePatrolRoutine);
+            resumePatrolRoutine = StartCoroutine(ResumePatrolAfterDelay(true)); // pickClosest: true
+        }
+        else if (!ignorePlayer && prevIgnore)
+        {
+            // เลิกยิ้มระหว่างดีเลย์ -> ยกเลิกดีเลย์ แล้ว "ไปต่อ" ทันที
+            if (resumePatrolRoutine != null) { StopCoroutine(resumePatrolRoutine); resumePatrolRoutine = null; }
+            agent.isStopped = false;
+
+            if (canSee && player)                // ถ้ากลับมาเห็นผู้เล่นแล้ว
+            {
+                chasing = true;
+                agent.speed = runSpeed;
+                TrySetDestination(player.position);
+            }
+            else                                 // ไม่เห็นผู้เล่น -> กลับไปเดินเวย์พอยต์
+            {
+                ResumePatrol(pickClosest: true); // หรือ false ถ้าอยากเดินต่อจาก wpIndex เดิม
+            }
         }
         else if (canSee)
         {
@@ -99,6 +150,14 @@ public class AIController : MonoBehaviour
         {
             chasing = false;
         }
+        // เพิ่งเลิกไล่ (หมดเวลา search) และไม่ได้เมินอยู่ กลับเวย์พอยต์
+        if (!chasing && prevChasing && !ignorePlayer)
+        {
+            ResumePatrol(pickClosest: false); // เดินต่อจาก wpIndex ปัจจุบัน
+        }
+
+        prevIgnore = ignorePlayer;
+        prevChasing = chasing;
 
         // --- Movement ---
         if (chasing)
@@ -117,15 +176,43 @@ public class AIController : MonoBehaviour
                 GoToNextWaypoint();
         }
 
+
         UpdateLocomotionBySpeed();  // ย้ายให้มาก่อน
         UpdateAnim();               // แล้วค่อยป้อนพารามิเตอร์
     }
 
     void UpdateAnim()
     {
-        // ป้อนค่าที่กราฟต้องใช้
-        anim.SetBool(IsChasingHash, chasing);
-        anim.SetFloat(SpeedHash, smoothedSpeed);
+        // ถ้ากำลัง transition อยู่ ปล่อยให้มันจบก่อน ไม่สั่ง CrossFade ทับ
+        if (anim.IsInTransition(0)) return;
+
+        if (chasing)
+        {
+            var info = anim.GetCurrentAnimatorStateInfo(0);
+            if (!info.IsName(runState))
+                anim.CrossFadeInFixedTime(runState, 0f);   // เข้าทันที
+            return;
+        }
+
+        // ----- ตัดสิน Walk/Idle ด้วยเกณฑ์ยืนจริง -----
+        bool standing =
+            agent == null ||
+            agent.pathPending ||
+            !agent.hasPath ||
+            agent.remainingDistance <= Mathf.Max(agent.stoppingDistance, arriveDistance) ||
+            agent.desiredVelocity.sqrMagnitude < 0.01f;
+
+        var cur = anim.GetCurrentAnimatorStateInfo(0);
+        if (standing)
+        {
+            if (!cur.IsName(idleState))
+                anim.CrossFadeInFixedTime(idleState, 0.05f);
+        }
+        else
+        {
+            if (!cur.IsName(walkState))
+                anim.CrossFadeInFixedTime(walkState, 0.05f);
+        }
     }
 
     // -------- Vision helpers --------
@@ -187,18 +274,57 @@ public class AIController : MonoBehaviour
     }
     void UpdateLocomotionBySpeed()
     {
-        // ความเร็วระนาบจริงของ Agent (ตัดแกน Y กันเนิน)
-        Vector3 v = agent ? agent.velocity : Vector3.zero;
+        Vector3 v = agent ? agent.desiredVelocity : Vector3.zero; // ใช้ desired แทน velocity จริง
         v.y = 0f;
         float speed = v.magnitude;
 
-        // ทำให้ลื่นขึ้น ไม่กระตุกเวลาขึ้น/ลง
-        float lerpRate = 10f;                // ไวขึ้น/ลง ปรับได้
-        smoothedSpeed = Mathf.Lerp(smoothedSpeed, speed, Time.deltaTime * lerpRate);
+        // ใช้เกณฑ์ standing เดียวกับข้างบน
+        bool standing =
+            agent == null ||
+            agent.pathPending ||
+            !agent.hasPath ||
+            agent.remainingDistance <= Mathf.Max(agent.stoppingDistance, arriveDistance) ||
+            agent.desiredVelocity.sqrMagnitude < 0.01f;
 
-        // จำกัดช่วงและส่งเข้า Animator
+        if (standing) speed = 0f;
+
+        float lerpRate = 10f;
+        smoothedSpeed = Mathf.Lerp(smoothedSpeed, speed, Time.deltaTime * lerpRate);
         smoothedSpeed = Mathf.Clamp(smoothedSpeed, 0f, runSpeed);
         anim.SetFloat(SpeedHash, smoothedSpeed);
+    }
+    void ResumePatrol(bool pickClosest)
+    {
+        agent.speed = walkSpeed;
+        lastSeenTime = float.NegativeInfinity;
+        agent.ResetPath();
+
+        if (waypoints != null && waypoints.Length > 0)
+        {
+            if (pickClosest) wpIndex = ClosestWaypointIndex();
+            TrySetDestination(waypoints[wpIndex].position);
+        }
+    }
+
+    int ClosestWaypointIndex()
+    {
+        if (waypoints == null || waypoints.Length == 0) return 0;
+        int best = 0;
+        float bestSqr = Mathf.Infinity;
+        Vector3 p = transform.position;
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            float d = (waypoints[i].position - p).sqrMagnitude;
+            if (d < bestSqr) { bestSqr = d; best = i; }
+        }
+        return best;
+    }
+    IEnumerator ResumePatrolAfterDelay(bool pickClosest)
+    {
+        yield return new WaitForSeconds(ignoreResumeDelay); // หน่วงตามที่ตั้งไว้ (ดีฟอลต์ 2 วิ)
+        agent.isStopped = false;
+        ResumePatrol(pickClosest);
+        resumePatrolRoutine = null;
     }
 
     void OnDrawGizmosSelected()
