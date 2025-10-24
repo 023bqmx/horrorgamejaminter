@@ -19,9 +19,15 @@ public class PlayerInteractor : MonoBehaviour
 
     public int ActiveSlot => activeSlot;
     [SerializeField] int activeSlot = 0; // 0..4
-    
+
 
     PickableItem currentHover;
+    
+    public void SetActiveSlot(int slot)
+    {
+    // limit to 0..4 (or capacity-1)
+    activeSlot = Mathf.Clamp(slot, 0, 4);
+    }
 
     void Reset()
     {
