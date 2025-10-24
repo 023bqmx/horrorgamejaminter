@@ -103,8 +103,16 @@ public class RollingNumberMachine : MonoBehaviour
         // Wait until all digits finish rolling
         yield return new WaitForSeconds(rollDuration + 2 * stopDelay);
 
+        // ✅ Save all 3 digits globally once everything stops
+        GameData.Digit1 = int.Parse(digit1.text);
+        GameData.Digit2 = int.Parse(digit2.text);
+        GameData.Digit3 = int.Parse(digit3.text);
+
+        Debug.Log($"[Saved Result] {GameData.Digit1}{GameData.Digit2}{GameData.Digit3}");
+
         // Wait a moment before showing result
         yield return new WaitForSeconds(resultStartDelay);
+
 
         // Show result texts one by one
         yield return StartCoroutine(FadeInResult(resultText1));
@@ -131,7 +139,9 @@ public class RollingNumberMachine : MonoBehaviour
         }
 
         // Final number
+        // Final number
         digitText.text = Random.Range(0, 10).ToString();
+
     }
 
     private IEnumerator FadeInResult(TextMeshProUGUI text)
@@ -178,3 +188,4 @@ public class RollingNumberMachine : MonoBehaviour
         text.color = c;
     }
 }
+    
