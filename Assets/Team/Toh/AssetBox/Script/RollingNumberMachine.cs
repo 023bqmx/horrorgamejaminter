@@ -13,38 +13,39 @@ public class RollingNumberMachine : MonoBehaviour
     public TextMeshProUGUI resultText2;
 
     [Header("Data")]
-    [Tooltip("ใส่ GameData จาก Inspector ได้เลย (ถ้าไม่ใส่จะพยายามหาในตัวเอง)")]
     public GameData gameData;
 
     [Header("Rolling Settings")]
-    [Tooltip("เวลารวมก่อนเริ่มหยุดหลักแรก")]
     public float rollDuration = 3f;
-    [Tooltip("ดีเลย์หยุดระหว่างแต่ละหลัก")]
     public float stopDelay = 0.4f;
-    [Tooltip("ความถี่การเปลี่ยนตัวเลข (วินาที/ครั้ง)")]
     public float rollSpeed = 0.05f;
 
     [Header("UI Anim/Fade")]
-    [Tooltip("เวลา pop-in UI")]
     public float popInDuration = 0.25f;
-    [Tooltip("รอก่อนซ่อน UI หลังโชว์ผล")]
     public float hideDelay = 1.5f;
-    [Tooltip("เวลา fade-out UI")]
     public float fadeOutDuration = 0.5f;
-    [Tooltip("เวลา fade-in ของ result แต่ละอัน")]
     public float resultFadeDuration = 0.6f;
-    [Tooltip("ดีเลย์คั่นระหว่าง resultText1 -> resultText2")]
     public float resultGapDelay = 0.4f;
-    [Tooltip("รอก่อนเริ่มโชว์ผลหลังหมุนหยุด")]
     public float resultStartDelay = 0.6f;
 
-    [Header("Audio (voice after Digit3 starts)")]
+    [Header("Audio (play AFTER Result Text 2)")]
     public AudioSource voiceSource;
     public AudioClip voiceClip;
     [Range(0f, 1f)] public float voiceVolume = 1f;
     public bool playOneShot = true;
-    [Tooltip("ดีเลย์เล็กน้อยหลัง 'เริ่ม' Digit3 ก่อนเล่นเสียง")]
-    public float voiceDelayAfterDigit3Start = 0f;
+    [Tooltip("ดีเลย์หลัง Result Text 2 แสดงเสร็จ ก่อนเริ่มเสียง")]
+    public float voiceDelayAfterResult2 = 0f;
+
+    [Header("Rolling Audio (Digit1 start → Digit3 stop)")]
+    public AudioSource rollingSource;
+    public AudioClip rollingLoopClip;
+    [Range(0f,1f)] public float rollingLoopVolume = 0.6f;
+    public float rollingLoopFade = 0.1f;
+    public AudioClip tickClip;
+    [Range(0f,1f)] public float tickVolume = 0.6f;
+
+    [Tooltip("ให้เสียงหมุนเริ่มก่อน Digit1 เริ่มหมุนกี่วินาที")]
+    public float preRollLeadTime = 1f;
 
     private bool isRolling = false;
     private bool d1Done, d2Done, d3Done;
@@ -63,6 +64,13 @@ public class RollingNumberMachine : MonoBehaviour
         SetTextAlpha(resultText1, 0f);
         SetTextAlpha(resultText2, 0f);
         numberSlotUI.SetActive(false);
+
+        if (rollingSource == null)
+        {
+            rollingSource = gameObject.AddComponent<AudioSource>();
+            rollingSource.playOnAwake = false;
+            rollingSource.spatialBlend = 0f; // 2D
+        }
     }
 
     public void TriggerRoll()
@@ -92,44 +100,65 @@ public class RollingNumberMachine : MonoBehaviour
         numberSlotUI.transform.localScale = Vector3.one;
         canvasGroup.alpha = 1f;
 
-        // --- start rolling all digits ---
+        // ===== เริ่ม "เสียงหมุน" ล่วงหน้าก่อน Digit1 =====
+        if (rollingLoopClip != null && rollingSource != null)
+        {
+            rollingSource.clip = rollingLoopClip;
+            rollingSource.loop = true;
+            rollingSource.volume = 0f;
+            rollingSource.Play();
+            if (rollingLoopFade > 0f)
+                yield return StartCoroutine(FadeAudio(rollingSource, 0f, rollingLoopVolume, rollingLoopFade));
+            else
+                rollingSource.volume = rollingLoopVolume;
+        }
+
+        if (preRollLeadTime > 0f)
+            yield return new WaitForSeconds(preRollLeadTime);
+
+        // ===== Start Rolling =====
         StartCoroutine(RollDigit(digit1, rollDuration + 0f * stopDelay, () => d1Done = true));
         StartCoroutine(RollDigit(digit2, rollDuration + 1f * stopDelay, () => d2Done = true));
         StartCoroutine(RollDigit(digit3, rollDuration + 2f * stopDelay, () => d3Done = true));
 
-        // --- voice: after digit3 has STARTED ---
-        if (voiceSource && voiceClip)
-        {
-            if (voiceDelayAfterDigit3Start > 0f)
-                yield return new WaitForSeconds(voiceDelayAfterDigit3Start);
+        // (ย้ายการเล่น voice ออกไปหลัง Result Text 2 แล้ว)
 
-            if (playOneShot) voiceSource.PlayOneShot(voiceClip, voiceVolume);
-            else { voiceSource.clip = voiceClip; voiceSource.volume = voiceVolume; voiceSource.Play(); }
-        }
-
-        // --- wait until all digits finished (robust vs. drift) ---
+        // รอจนทั้งสามหลักหยุด
         yield return new WaitUntil(() => d1Done && d2Done && d3Done);
 
-        // --- save result (guard null) ---
+        // ปิดเสียงหมุน
+        if (rollingSource != null && rollingSource.isPlaying)
+        {
+            if (rollingLoopFade > 0f)
+                yield return StartCoroutine(FadeAudio(rollingSource, rollingSource.volume, 0f, rollingLoopFade));
+            rollingSource.Stop();
+            rollingSource.volume = rollingLoopVolume;
+        }
+
+        // บันทึกผล
         int v1 = SafeParse(digit1);
         int v2 = SafeParse(digit2);
         int v3 = SafeParse(digit3);
-
-        if (gameData)
-        {
-            gameData.Digit1 = v1;
-            gameData.Digit2 = v2;
-            gameData.Digit3 = v3;
-        }
+        if (gameData) { gameData.Digit1 = v1; gameData.Digit2 = v2; gameData.Digit3 = v3; }
         Debug.Log($"[Saved Result] {v1}{v2}{v3}");
 
-        // --- show result texts ---
+        // โชว์ผล
         yield return new WaitForSeconds(resultStartDelay);
         yield return StartCoroutine(FadeInResult(resultText1));
         yield return new WaitForSeconds(resultGapDelay);
         yield return StartCoroutine(FadeInResult(resultText2));
 
-        // --- hide & reset ---
+        // ===== เล่นเสียงหลัง Result Text 2 แสดงเสร็จ =====
+        if (voiceSource && voiceClip)
+        {
+            if (voiceDelayAfterResult2 > 0f)
+                yield return new WaitForSeconds(voiceDelayAfterResult2);
+
+            if (playOneShot) voiceSource.PlayOneShot(voiceClip, voiceVolume);
+            else { voiceSource.clip = voiceClip; voiceSource.volume = voiceVolume; voiceSource.Play(); }
+        }
+
+        // ซ่อน UI
         yield return new WaitForSeconds(hideDelay);
         yield return StartCoroutine(FadeOutUI());
 
@@ -141,15 +170,20 @@ public class RollingNumberMachine : MonoBehaviour
         if (!digitText) { onDone?.Invoke(); yield break; }
 
         float elapsed = 0f;
+        float step = Mathf.Max(0.0001f, rollSpeed);
+
         while (elapsed < rollTime)
         {
             digitText.text = Random.Range(0, 10).ToString();
-            float step = Mathf.Max(0.0001f, rollSpeed);
+
+            // เสียงติ๊กทุกครั้งที่เปลี่ยนเลข (ถ้ามี)
+            if (tickClip != null && rollingSource != null)
+                rollingSource.PlayOneShot(tickClip, tickVolume);
+
             yield return new WaitForSeconds(step);
             elapsed += step;
         }
 
-        // final settle
         digitText.text = Random.Range(0, 10).ToString();
         onDone?.Invoke();
     }
@@ -188,10 +222,22 @@ public class RollingNumberMachine : MonoBehaviour
 
         if (canvasGroup) canvasGroup.alpha = 0f;
         numberSlotUI.SetActive(false);
-
-        // reset result alphas soรอบหน้าเริ่มที่ 0
         SetTextAlpha(resultText1, 0f);
         SetTextAlpha(resultText2, 0f);
+    }
+
+    // ---------- helpers ----------
+    private IEnumerator FadeAudio(AudioSource src, float from, float to, float dur)
+    {
+        if (src == null || dur <= 0f) yield break;
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            src.volume = Mathf.Lerp(from, to, t / dur);
+            yield return null;
+        }
+        src.volume = to;
     }
 
     private void SetTextAlpha(TextMeshProUGUI text, float alpha)
