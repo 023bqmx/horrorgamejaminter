@@ -1685,6 +1685,8 @@ MonoBehaviour:
   shakeLoop: {fileID: 8300000, guid: acec41d4d0131734faab069483000bf1, type: 3}
   shakeBaseVolume: 0.8
   shakeVolumeLerp: 10
+  chargeDepletedThreshold: 0.02
+  chargeResetThreshold: 0.25
   sfxSource: {fileID: 0}
   fullFillSfx: {fileID: 0}
   fullFillVolume: 1

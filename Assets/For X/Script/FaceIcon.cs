@@ -39,6 +39,10 @@ public class FaceIcon : MonoBehaviour
     [SerializeField] private float shakeBaseVolume = 0.45f;
     [SerializeField] private float shakeVolumeLerp = 10f;
 
+    [SerializeField, Range(0f, 1f)] private float chargeDepletedThreshold = 0.02f; // ถึงจุด "เต็มหลอด" เมื่อ charge <= 2%
+    [SerializeField, Range(0f, 1f)] private float chargeResetThreshold = 0.25f; // ต้องฟื้นเกิน 25% ถึงจะอนุญาตทริกเกอร์รอบใหม่
+    bool _fullSfxPlayedThisCycle = false;       // กันยิงซ้ำในรอบเดียว
+
     // NEW: ----- Full bar SFX -----
     [Header("Audio (full bar SFX)")]
     [SerializeField] private AudioSource sfxSource;        // ยิง one-shot
@@ -61,6 +65,8 @@ public class FaceIcon : MonoBehaviour
 
     enum Trend { Idle, Rising, Falling }
     Trend _trend = Trend.Idle;
+
+
 
     void Reset()
     {
@@ -92,6 +98,8 @@ public class FaceIcon : MonoBehaviour
         // mute & stop audio at boot
         SafeStop(trendSource);
         SafeStop(shakeSource);
+
+        if (sfxSource) sfxSource.spatialBlend = 0f; // บังคับ 2D
     }
 
     void Update()
@@ -126,12 +134,34 @@ public class FaceIcon : MonoBehaviour
         UpdateShake(_currentFill, gatedSmile);
 
         // NEW: ยิง SFX ตอน "ข้าม" เกณฑ์เต็มหลอดจากด้านล่างขึ้นบน
-        TryPlayFullSfx(_currentFill, _prevFill);
+        TryPlayFullSfxUsingCharge(smileGate ? smileGate.charge01 : 1f);
 
         // AUDIO: trend + shake
         UpdateAudio(_currentFill, _prevFill);
 
         _prevFill = _currentFill;
+    }
+    // ===== ใช้ charge จริงในการทริกเกอร์ =====
+    void TryPlayFullSfxUsingCharge(float charge01)
+    {
+        if (!sfxSource || !fullFillSfx) return;
+
+        // ถึงจุดหมด (เต็มหลอดแดง) และยังไม่ได้ยิงในรอบนี้
+        if (!_fullSfxPlayedThisCycle && charge01 <= chargeDepletedThreshold)
+        {
+            // กันสแปมด้วยคูลดาวน์เผื่อเฟรมสั่น ๆ
+            if (Time.time - _lastFullSfxTime >= fullSfxCooldown)
+            {
+                sfxSource.PlayOneShot(fullFillSfx, fullFillVolume);
+                _lastFullSfxTime = Time.time;
+                _fullSfxPlayedThisCycle = true;
+                //Debug.Log("FULL SFX fired (by charge).");
+            }
+        }
+
+        // รีเซ็ตสิทธิ์ยิงใหม่เมื่อฟื้นเกินเกณฑ์
+        if (_fullSfxPlayedThisCycle && charge01 >= chargeResetThreshold)
+            _fullSfxPlayedThisCycle = false;
     }
 
     // =============== FULL BAR SFX (NEW) ===============
