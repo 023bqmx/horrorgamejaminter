@@ -385,7 +385,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1639274153}
   m_SourcePrefab: {fileID: 100100000, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
 --- !u!1 &573111829
 GameObject:
@@ -658,6 +661,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1639274146 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+  m_PrefabInstance: {fileID: 437099333}
+  m_PrefabAsset: {fileID: 0}
+--- !u!81 &1639274153
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639274146}
+  m_Enabled: 1
 --- !u!1 &1706635217
 GameObject:
   m_ObjectHideFlags: 0
@@ -1481,6 +1497,11 @@ MonoBehaviour:
   resultFadeDuration: 0.5
   resultGapDelay: 0.2
   resultStartDelay: 0.5
+  voiceSource: {fileID: 5588935885486463363}
+  voiceClip: {fileID: 8300000, guid: 7555f06a8422b804db635ec4bdfa7c67, type: 3}
+  voiceVolume: 1
+  playOneShot: 1
+  voiceDelayAfterDigit3Start: 1
 --- !u!82 &5588935885486463363
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1492,8 +1513,8 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_Resource: {fileID: 8300000, guid: 7555f06a8422b804db635ec4bdfa7c67, type: 3}
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -1944,6 +1965,6 @@ SceneRoots:
   - {fileID: 573111831}
   - {fileID: 1846854182}
   - {fileID: 699263690}
-  - {fileID: 6824140352556818609}
   - {fileID: 437099333}
   - {fileID: 838848886}
+  - {fileID: 6824140352556818609}

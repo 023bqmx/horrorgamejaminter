@@ -32,6 +32,14 @@ public class RollingNumberMachine : MonoBehaviour
     [Tooltip("Delay before showing the first result text after rolling stops")]
     public float resultStartDelay = 0.6f;
 
+    [Header("Audio (voice after Digit3 starts)")]
+    public AudioSource voiceSource;     // ลาก AudioSource มาใส่
+    public AudioClip voiceClip;         // ลากไฟล์เสียงที่มีอยู่แล้ว
+    [Range(0f,1f)] public float voiceVolume = 1f;
+    public bool playOneShot = true;
+    [Tooltip("ดีเลย์เล็กน้อยหลัง Digit3 เริ่ม ก่อนเล่นเสียง (ถ้าไม่ต้องการให้ใส่ 0)")]
+    public float voiceDelayAfterDigit3Start = 0f;
+
     private bool isRolling = false;
     private CanvasGroup canvasGroup;
 
@@ -76,6 +84,21 @@ public class RollingNumberMachine : MonoBehaviour
         StartCoroutine(RollDigit(digit1, rollDuration + 0 * stopDelay));
         StartCoroutine(RollDigit(digit2, rollDuration + 1 * stopDelay));
         StartCoroutine(RollDigit(digit3, rollDuration + 2 * stopDelay));
+
+        // >>> เล่นเสียง "หลังจากขึ้น Digit3" (เริ่มหมุนตัวที่สาม) <<<
+        if (voiceSource != null && voiceClip != null)
+        {
+            if (voiceDelayAfterDigit3Start > 0f)
+                yield return new WaitForSeconds(voiceDelayAfterDigit3Start);
+
+            if (playOneShot) voiceSource.PlayOneShot(voiceClip, voiceVolume);
+            else
+            {
+                voiceSource.clip = voiceClip;
+                voiceSource.volume = voiceVolume;
+                voiceSource.Play();
+            }
+        }
 
         // Wait until all digits finish rolling
         yield return new WaitForSeconds(rollDuration + 2 * stopDelay);
@@ -125,6 +148,7 @@ public class RollingNumberMachine : MonoBehaviour
         }
 
         SetTextAlpha(text, 1);
+        yield break;
     }
 
     private IEnumerator FadeOutUI()
