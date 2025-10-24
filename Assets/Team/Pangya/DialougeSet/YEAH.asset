@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5596cb0d80bf2e54ea6958770edaf25e, type: 3}
   m_Name: YEAH
   m_EditorClassIdentifier: 
-  lines: []
+  lines:
+  - speaker: MRX
+    body: 'GOONER '
+    voiceClip: {fileID: 0}
+    voiceVolume: 0
+    holdExtra: 0
   charsPerSecond: 28
   punctuationDelay: 0.12
   fadeIn: 0.15
