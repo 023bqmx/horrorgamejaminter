@@ -28,53 +28,51 @@ public class KeypadPuzzle : MonoBehaviour
     public Color normalOutlineColor = Color.white;
     public Color wrongOutlineColor = Color.red;
 
-    private string playerInput = "";
-    private string correctCode;
-    private bool isChecking = false;
+    string playerInput = "";
+    bool isChecking = false;
 
     void Start()
     {
-        if (!gameData)
-            gameData = FindObjectOfType<GameData>();
-
-        correctCode = $"{gameData.Digit1}{gameData.Digit2}{gameData.Digit3}";
-        Debug.Log("[KeypadPuzzle] Correct code: " + correctCode);
+        if (!gameData) gameData = FindObjectOfType<GameData>();
 
         if (inputDisplay) inputDisplay.text = "";
         if (outlineImage) outlineImage.color = normalOutlineColor;
-
         if (correctUI) correctUI.SetActive(false);
         if (wrongUI) wrongUI.SetActive(false);
+
+        // debug โค้ดปัจจุบัน (คำนวณสด)
+        Debug.Log("[KeypadPuzzle] Current correct code: " + BuildCorrectCode());
     }
 
     void Update()
     {
         if (isChecking) return;
 
+        // รองรับพิมพ์จากคีย์บอร์ด (ถ้าใช้ปุ่ม UI ให้เรียก PressDigit/PressBackspace/PressEnter)
         foreach (char c in Input.inputString)
         {
-            if (char.IsDigit(c))
-                AddDigit(c);
-            else if (c == '\b')
-                RemoveLastDigit();
-            else if (c == '\n' || c == '\r')
-                CheckCode();
+            if (char.IsDigit(c)) PressDigit(c - '0');
+            else if (c == '\b') PressBackspace();
+            else if (c == '\n' || c == '\r') PressEnter();
         }
     }
 
-    private void AddDigit(char c)
+    // ===== Public hooks for UI buttons =====
+    public void PressDigit(int d)
     {
+        if (isChecking) return;
+        d = Mathf.Clamp(d, 0, 9);
         if (playerInput.Length >= 3) return;
 
-        playerInput += c;
+        playerInput += d.ToString();
         UpdateDisplay();
 
-        if (playerInput.Length == 3)
-            CheckCode();
+        if (playerInput.Length == 3) CheckCode();
     }
 
-    private void RemoveLastDigit()
+    public void PressBackspace()
     {
+        if (isChecking) return;
         if (playerInput.Length > 0)
         {
             playerInput = playerInput.Substring(0, playerInput.Length - 1);
@@ -82,53 +80,57 @@ public class KeypadPuzzle : MonoBehaviour
         }
     }
 
-    private void UpdateDisplay()
+    public void PressEnter()
     {
-        if (inputDisplay)
-            inputDisplay.text = playerInput;
+        if (isChecking) return;
+        if (playerInput.Length == 3) CheckCode();
     }
 
-    private void CheckCode()
+    // ===== core =====
+    string BuildCorrectCode()
+    {
+        if (!gameData) return "";
+        // กันค่าหลุดช่วง/ติดลบ และคง leading zero
+        int d1 = Mathf.Clamp(gameData.Digit1, 0, 9);
+        int d2 = Mathf.Clamp(gameData.Digit2, 0, 9);
+        int d3 = Mathf.Clamp(gameData.Digit3, 0, 9);
+        return $"{d1}{d2}{d3}";
+    }
+
+    void UpdateDisplay()
+    {
+        if (inputDisplay) inputDisplay.text = playerInput;
+    }
+
+    void CheckCode()
     {
         isChecking = true;
 
-        if (playerInput == correctCode)
-        {
-            Debug.Log("✅ Correct code entered!");
-            StartCoroutine(HandleCorrect());
-        }
-        else
-        {
-            Debug.Log("❌ Wrong code!");
-            Debug.Log(gameData.Digit1);
-            Debug.Log(gameData.Digit2);
-            Debug.Log(gameData.Digit3);
-            StartCoroutine(HandleWrong());
-        }
+        string correct = BuildCorrectCode();            // <<< คำนวณสดทุกครั้ง
+        bool ok = string.Equals(playerInput, correct, System.StringComparison.Ordinal);
+
+        // debug ช่วยไล่ปัญหา
+        Debug.Log($"[KeypadPuzzle] Input={playerInput}  Correct={correct}  Match={ok}");
+
+        if (ok) StartCoroutine(HandleCorrect());
+        else StartCoroutine(HandleWrong());
     }
 
-    private IEnumerator HandleCorrect()
+    IEnumerator HandleCorrect()
     {
-        if (audioSource && correctSound)
-            audioSource.PlayOneShot(correctSound);
+        if (audioSource && correctSound) audioSource.PlayOneShot(correctSound);
 
-        if (correctUI)
-        {
-            yield return StartCoroutine(PopUI(correctUI));
-        }
+        if (correctUI) yield return StartCoroutine(PopUI(correctUI));
 
         yield return new WaitForSeconds(0.3f);
-
-        if (puzzleUI)
-            puzzleUI.SetActive(false);
+        if (puzzleUI) puzzleUI.SetActive(false);
 
         isChecking = false;
     }
 
-    private IEnumerator HandleWrong()
+    IEnumerator HandleWrong()
     {
-        if (audioSource && wrongSound)
-            audioSource.PlayOneShot(wrongSound);
+        if (audioSource && wrongSound) audioSource.PlayOneShot(wrongSound);
 
         if (outlineImage)
         {
@@ -137,18 +139,14 @@ public class KeypadPuzzle : MonoBehaviour
             outlineImage.color = normalOutlineColor;
         }
 
-        if (wrongUI)
-        {
-            yield return StartCoroutine(PopUI(wrongUI));
-        }
+        if (wrongUI) yield return StartCoroutine(PopUI(wrongUI));
 
         playerInput = "";
         UpdateDisplay();
-
         isChecking = false;
     }
 
-    private IEnumerator PopUI(GameObject ui)
+    IEnumerator PopUI(GameObject ui)
     {
         ui.SetActive(true);
         Transform t = ui.transform;
@@ -162,7 +160,6 @@ public class KeypadPuzzle : MonoBehaviour
             t.localScale = Vector3.LerpUnclamped(Vector3.zero, Vector3.one, k);
             yield return null;
         }
-
         t.localScale = Vector3.one;
 
         yield return new WaitForSeconds(1f);

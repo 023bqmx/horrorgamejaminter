@@ -140,6 +140,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 595011510}
     - target: {fileID: 6378745676365112188, guid: 19c529c6b40881c45b3345312b742855, type: 3}
+      propertyPath: footMaxDistance
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 6378745676365112188, guid: 19c529c6b40881c45b3345312b742855, type: 3}
+      propertyPath: footMinDistance
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6378745676365112188, guid: 19c529c6b40881c45b3345312b742855, type: 3}
       propertyPath: 'waypoints.Array.data[0]'
       value: 
       objectReference: {fileID: 852894016}
