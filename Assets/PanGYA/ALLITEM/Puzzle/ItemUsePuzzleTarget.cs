@@ -1,7 +1,14 @@
 // ItemUsePuzzleTarget.cs
-// Unity 6 — Inventory OR UI puzzle with hover name, Outline lock, Timeline/Animator,
-// and SFX on UI open / success. Drop this on the CHILD (hover collider) object.
+// Unity 6 — Inventory OR UI puzzle with hover label, Outline lock, Timeline/Animator, SFX,
+// and robust Animator playback (trigger/bool/crossfade/state-play).
+//
+// Key fixes to ensure animation plays:
+//  • Option to include Animator(s) from the spawned prefab
+//  • Ensure objects are active/enabled before play
+//  • Optional Rebind + Update(0) before triggering
+//  • Optional one-frame delay before animator actions
 
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -24,12 +31,11 @@ public class ItemUsePuzzleTarget : MonoBehaviour, IItemUseHandler
     [SerializeField] bool onlyOnce = true;
 
     [Header("UI Puzzle Hook (OpenUIPuzzle mode)")]
-    public UnityEvent OnOpenUIPuzzle;        // Hook your UI opener
+    public UnityEvent OnOpenUIPuzzle;
     [SerializeField] bool uiRequiresMatchingItem = false;
     [SerializeField] bool uiConsumeItemOnOpen = false;
 
     [Header("Quick Outline (root)")]
-    [Tooltip("Highlighter on the ROOT (handles proximity + hover glow).")]
     [SerializeField] OutlineHighlighter outlineHighlighter;
 
     [Header("Label (optional TMP)")]
@@ -46,19 +52,40 @@ public class ItemUsePuzzleTarget : MonoBehaviour, IItemUseHandler
     [Header("Timeline (optional)")]
     [SerializeField] PlayableDirector directorToPlay;
 
-    [Header("Animator (optional)")]
+    [Header("Animator (targets you want to drive)")]
     [SerializeField] Animator[] animators;
-    [SerializeField] string triggerOnSolve = "";
+
+    [Header("Animator – Playback Options")]
+    [Tooltip("Also include any Animator found on the spawned prefab (and its children).")]
+    [SerializeField] bool includeSpawnedPrefabAnimator = true;
+
+    [Tooltip("If true, set this Trigger on all target animators.")]
+    [SerializeField] bool useTrigger = true;
+    [SerializeField] string triggerOnSolve = "Open";
+
+    [Tooltip("If true, set this Bool on all target animators.")]
+    [SerializeField] bool useBool = false;
     [SerializeField] string boolParamOnSolve = "";
     [SerializeField] bool   boolValueOnSolve = true;
 
+    [Tooltip("If true, crossfade to this state on all target animators (layer 0).")]
+    [SerializeField] bool playStateOnSolve = false;
+    [SerializeField] string stateNameOnSolve = "";
+    [SerializeField, Min(0f)] float crossFadeDuration = 0.1f;
+
+    [Tooltip("Call Rebind() and Update(0) before playing (helps when just enabled/instantiated).")]
+    [SerializeField] bool rebindBeforePlay = true;
+
+    [Tooltip("Wait one frame before doing animator actions (lets newly spawned objects initialize).")]
+    [SerializeField] bool delayOneFrameBeforeAnimatorActions = false;
+
     [Header("Audio (optional)")]
     [SerializeField] AudioSource audioSource;       // If null, uses PlayClipAtPoint
-    [SerializeField] AudioClip sfxOpenUI;           // When UI opens (Interact or UI mode via UseItem)
-    [SerializeField] AudioClip sfxUseSuccess;       // When puzzle successfully solves
+    [SerializeField] AudioClip sfxOpenUI;           // When UI opens
+    [SerializeField] AudioClip sfxUseSuccess;       // When solved
 
     [Header("Events (optional)")]
-    public UnityEvent OnSolved;                     // Great for hooking external doors/lights
+    public UnityEvent OnSolved;
 
     bool _completed;
 
@@ -88,7 +115,7 @@ public class ItemUsePuzzleTarget : MonoBehaviour, IItemUseHandler
         }
     }
 
-    // Optional non-item path for UI mode (e.g., press E to open keypad UI)
+    // Optional non-item path (e.g., E to open keypad UI)
     public void Interact()
     {
         if (_completed && onlyOnce) return;
@@ -145,28 +172,27 @@ public class ItemUsePuzzleTarget : MonoBehaviour, IItemUseHandler
         if (label) label.gameObject.SetActive(false);
         if (originalToDisable) originalToDisable.SetActive(false);
 
+        GameObject spawned = null;
         if (spawnPrefab)
         {
             var pos = spawnAt ? spawnAt.position : transform.position;
             var rot = spawnAt ? spawnAt.rotation : transform.rotation;
-            var spawned = Instantiate(spawnPrefab, pos, rot);
+            spawned = Instantiate(spawnPrefab, pos, rot);
             if (parentSpawn && spawnAt) spawned.transform.SetParent(spawnAt, true);
         }
 
+        // Timeline first (often fine either order, but doing this early can help if Timeline prepares bindings)
         if (directorToPlay) directorToPlay.Play();
-
-        if (animators != null)
-        {
-            foreach (var a in animators.Where(a => a))
-            {
-                if (!string.IsNullOrEmpty(triggerOnSolve)) a.SetTrigger(triggerOnSolve);
-                if (!string.IsNullOrEmpty(boolParamOnSolve)) a.SetBool(boolParamOnSolve, boolValueOnSolve);
-            }
-        }
 
         if (playSuccessSfx) PlayOneShot(sfxUseSuccess);
 
-        OnSolved?.Invoke();                         // Pair external actions (open door, etc.)
+        // Animator actions (can be delayed 1 frame to avoid race with instantiation/bindings)
+        if (delayOneFrameBeforeAnimatorActions)
+            StartCoroutine(DoAnimatorActionsNextFrame(spawned));
+        else
+            DoAnimatorActions(spawned);
+
+        OnSolved?.Invoke();
 
         if (outlineHighlighter) outlineHighlighter.LockOff();
 
@@ -176,6 +202,61 @@ public class ItemUsePuzzleTarget : MonoBehaviour, IItemUseHandler
         {
             foreach (var c in GetComponentsInChildren<Collider>(true))
                 c.enabled = false;
+        }
+    }
+
+    IEnumerator DoAnimatorActionsNextFrame(GameObject spawned)
+    {
+        yield return null; // wait one frame
+        DoAnimatorActions(spawned);
+    }
+
+    void DoAnimatorActions(GameObject spawned)
+    {
+        // Build the animator list
+        var list = animators != null ? animators.Where(a => a).ToList() : new System.Collections.Generic.List<Animator>();
+
+        if (includeSpawnedPrefabAnimator && spawned)
+        {
+            var spawnedAnims = spawned.GetComponentsInChildren<Animator>(true);
+            foreach (var a in spawnedAnims)
+                if (a && !list.Contains(a)) list.Add(a);
+        }
+
+        if (list.Count == 0) return;
+
+        foreach (var a in list)
+        {
+            // Ensure active/enabled
+            if (!a.gameObject.activeInHierarchy) a.gameObject.SetActive(true);
+            if (!a.enabled) a.enabled = true;
+
+            // Rebind/prime if requested (prevents “first frame swallowed”)
+            if (rebindBeforePlay)
+            {
+                a.Rebind();
+                a.Update(0f);
+            }
+
+            // Trigger / Bool
+            if (useTrigger && !string.IsNullOrEmpty(triggerOnSolve))
+            {
+                a.ResetTrigger(triggerOnSolve);
+                a.SetTrigger(triggerOnSolve);
+            }
+            if (useBool && !string.IsNullOrEmpty(boolParamOnSolve))
+            {
+                a.SetBool(boolParamOnSolve, boolValueOnSolve);
+            }
+
+            // Direct state play (optional)
+            if (playStateOnSolve && !string.IsNullOrEmpty(stateNameOnSolve))
+            {
+                if (crossFadeDuration > 0f)
+                    a.CrossFade(stateNameOnSolve, crossFadeDuration, 0, 0f);
+                else
+                    a.Play(stateNameOnSolve, 0, 0f);
+            }
         }
     }
 

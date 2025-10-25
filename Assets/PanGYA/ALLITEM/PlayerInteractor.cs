@@ -1,6 +1,7 @@
 // PlayerInteractor.cs
-// Add hover for ItemUsePuzzleTarget (shows name; F to use).
-// Keeps existing pickup hover. Also toggles OutlineHighlighter on the root of puzzles.
+// Unity 6 — Picks items, shows hover, uses bag items on puzzles,
+// opens UI-mode puzzles without selecting an item, toggles root OutlineHighlighter on hover,
+// and (if no target) tries to use a battery in the active slot via FlashlightInventoryBinder.
 
 using UnityEngine;
 
@@ -20,12 +21,12 @@ public class PlayerInteractor : MonoBehaviour
 
     [Header("Selection (for using items)")]
     [Tooltip("Number keys 1-5 select which item to Use on a target with the Use key.")]
-    public int ActiveSlot => activeSlot;
     [SerializeField] int activeSlot = 0; // 0..4
+    public int ActiveSlot => activeSlot;
 
+    // Hover state
     PickableItem currentHoverPickup;
     ItemUsePuzzleTarget currentHoverPuzzle;
-
     OutlineHighlighter _lastHoverHL;
 
     public void SetActiveSlot(int slot)
@@ -59,7 +60,7 @@ public class PlayerInteractor : MonoBehaviour
 
     void UpdateHover()
     {
-        // 1) Check for pickable first (keeps your original behavior)
+        // 1) Check for pickable first (keeps classic behavior)
         var hitPickup = RaycastFor<PickableItem>(interactRange, interactMask);
 
         // 2) If no pickable, check for puzzle target (child) or interface on parent
@@ -88,7 +89,7 @@ public class PlayerInteractor : MonoBehaviour
         if (currentHoverPickup)
         {
             string label = $"<b>{currentHoverPickup.Item.DisplayName}</b>\n<alpha=#AA>Press [{pickKey}]";
-            hoverUI?.Show(label); // ItemHoverUI.Show(string) provided in your project
+            hoverUI?.Show(label);
             currentHoverPuzzle = null;
         }
         else if (hitPuzzle)
@@ -101,6 +102,13 @@ public class PlayerInteractor : MonoBehaviour
         {
             currentHoverPuzzle = null;
             hoverUI?.Hide();
+
+            // turn off last hover HL if aim moved away
+            if (_lastHoverHL)
+            {
+                _lastHoverHL.SetHoverActive(false);
+                _lastHoverHL = null;
+            }
         }
     }
 
@@ -124,62 +132,107 @@ public class PlayerInteractor : MonoBehaviour
     void TryUseActiveOnTarget()
     {
         if (!inventory) return;
-        if (activeSlot < 0 || activeSlot >= inventory.Items.Count) return;
-
-        var selectedItem = inventory.Items[activeSlot];
-        if (!selectedItem) return;
 
         // Find any IItemUseHandler (child/parent) at the crosshair
-    var target = RaycastForComponentOrParent<IItemUseHandler>(interactRange, interactMask);
-    if (target == null)
-    {
-    // NEW: allow using battery directly from bag when nothing is targeted
-    var binder = FindFirstObjectByType<FlashlightInventoryBinder>(FindObjectsInactive.Exclude);
-    if (binder && inventory && activeSlot >= 0 && activeSlot < inventory.Items.Count)
-    {
-        if (binder.UseBatteryFromInventorySlot(activeSlot))
-            return; // consumed battery → we're done
-    }
-    return; // nothing else to use
+        var target = RaycastForComponentOrParent<IItemUseHandler>(interactRange, interactMask);
+
+        // Get selected item if any
+        ItemDefinition selectedItem = (activeSlot >= 0 && activeSlot < inventory.Items.Count)
+            ? inventory.Items[activeSlot] : null;
+
+        if (target == null)
+        {
+            // NEW: allow using battery directly from bag when nothing is targeted
+            var binder = FindFirstObjectByType<FlashlightInventoryBinder>(FindObjectsInactive.Exclude);
+            if (binder && selectedItem != null)
+            {
+                // binder will validate it's a battery; returns true if consumed
+                if (binder.UseBatteryFromInventorySlot(activeSlot))
+                {
+                    hoverUI?.Show("<b>Flashlight reloaded</b>");
+                    return;
+                }
+            }
+            return;
+        }
+
+        // If no item selected, allow ItemUsePuzzleTarget (UI mode) to open via Interact()
+        if (selectedItem == null && target is ItemUsePuzzleTarget pit)
+        {
+            pit.Interact();    // safe: Interact() itself checks mode == OpenUIPuzzle
+            return;
+        }
+
+        // Otherwise use the item normally
+        if (selectedItem != null && target.CanUseItem(selectedItem))
+        {
+            target.UseItem(selectedItem, inventory);
+        }
+        else
+        {
+            hoverUI?.Show("<b>Can't use that here</b>");
+        }
     }
 
-    }
+    // -------- Ray helpers --------
 
-    // -------- Ray helpers (as in your original file) --------
+    // Prefer non-triggers first; fallback includes triggers.
     T RaycastFor<T>(float range, LayerMask mask) where T : Component
     {
         if (!playerCamera) return null;
         var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-        if (Physics.Raycast(ray, out var hit, range, mask, QueryTriggerInteraction.Collide))
+
+        // Prefer non-triggers
+        if (Physics.Raycast(ray, out var hit, range, mask, QueryTriggerInteraction.Ignore))
             return hit.collider.GetComponentInParent<T>();
+
+        // Fallback including triggers
+        if (Physics.Raycast(ray, out hit, range, mask, QueryTriggerInteraction.Collide))
+            return hit.collider.GetComponentInParent<T>();
+
         return null;
     }
 
+    // Finds interface/class on the hit, parents, the OutlineHighlighter root's children, or children of the hit.
     T RaycastForComponentOrParent<T>(float range, LayerMask mask) where T : class
     {
         if (!playerCamera) return null;
-
         var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-        if (Physics.Raycast(ray, out var hit, range, mask, QueryTriggerInteraction.Collide))
+
+        // Prefer non-triggers
+        if (!Physics.Raycast(ray, out var hit, range, mask, QueryTriggerInteraction.Ignore))
         {
-            // exact object
-            var asComp = hit.collider.GetComponent(typeof(T)) as T;
-            if (asComp != null) return asComp;
-
-            // walk up parents
-            var t = hit.collider.transform;
-            while (t != null)
-            {
-                var maybe = t.GetComponent(typeof(T)) as T;
-                if (maybe != null) return maybe;
-                t = t.parent;
-            }
-
-            // search children (covers “socket child under big wall mesh” case)
-            var mbs = hit.collider.GetComponentsInChildren<MonoBehaviour>(true);
-            for (int i = 0; i < mbs.Length; i++)
-                if (mbs[i] is T found) return found;
+            // Then include triggers
+            if (!Physics.Raycast(ray, out hit, range, mask, QueryTriggerInteraction.Collide))
+                return null;
         }
+
+        // exact object
+        var asComp = hit.collider.GetComponent(typeof(T)) as T;
+        if (asComp != null) return asComp;
+
+        // walk up parents
+        var t = hit.collider.transform;
+        while (t != null)
+        {
+            var maybe = t.GetComponent(typeof(T)) as T;
+            if (maybe != null) return maybe;
+            t = t.parent;
+        }
+
+        // If we hit a proximity trigger, jump to the group root and search all children
+        var groupRoot = hit.collider.GetComponentInParent<OutlineHighlighter>();
+        if (groupRoot)
+        {
+            var found = groupRoot.GetComponentInChildren(typeof(T), true) as T;
+            if (found != null) return found;
+        }
+
+        // Last resort: search children under the hit object itself
+        var mbs = hit.collider.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < mbs.Length; i++)
+            if (mbs[i] is T foundChild) return foundChild;
+
         return null;
     }
 }
