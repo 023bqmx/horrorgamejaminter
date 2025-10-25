@@ -1,35 +1,41 @@
+// DoorPuzzleLeverSocket.cs — Timeline-first version (Unity 6)
+// Plays a Timeline on the spawned lever prefab, then completes & notifies receivers.
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Playables;   // PlayableDirector for Timeline
-// If you also use UnityEngine.Timeline, it's optional to include: using UnityEngine.Timeline;
+using UnityEngine.Playables;
 
 [DisallowMultipleComponent]
 public class DoorPuzzleLeverSocket : MonoBehaviour, IItemUseHandler
 {
     [Header("Requirements")]
-    [SerializeField] ItemDefinition requiredItem;          // e.g., Lever item
-    [SerializeField] bool onlyOnce = true;                 // prevent reuse
-    bool _completed;
+    [SerializeField] ItemDefinition requiredItem;
+    [SerializeField] bool onlyOnce = true;
 
-    [Header("Visuals (optional)")]
-    [Tooltip("Shown while broken (optional). Will be disabled when fixed.")]
+    [Header("Visuals")]
     [SerializeField] GameObject brokenVisual;
-    [Tooltip("Prefab to instantiate as the fixed lever when the item is used.")]
     [SerializeField] GameObject leverFixedPrefab;
-    [Tooltip("Where to spawn the fixed lever prefab.")]
-    [SerializeField] Transform socketMount;
+    [SerializeField] Transform socketMount; // parent/mount for leverFixedPrefab
 
-    [Header("Timeline (optional)")]
-    [Tooltip("PlayableDirector to play when the lever is inserted.")]
-    [SerializeField] PlayableDirector director;            // call Play() on success
+    [Header("Timeline (fallback on socket)")]
+    [Tooltip("Used only if the spawned prefab has no PlayableDirector.")]
+    [SerializeField] PlayableDirector directorOnSocket;
 
-    [Header("Notify others (optional)")]
-    [Tooltip("Scripts to notify (must implement ILeverUseReceiver).")]
-    [SerializeField] List<MonoBehaviour> receivers = new(); // drag any components that implement ILeverUseReceiver
+    [Header("Notify receivers when the sequence finishes")]
+    [SerializeField] List<MonoBehaviour> receivers = new(); // must implement ILeverUseReceiver
 
-    [Header("Colliders / Interaction (optional)")]
-    [Tooltip("Disable this collider after completion so it can't be reused.")]
+    [Header("Optional: block re-use after complete")]
     [SerializeField] Collider interactBlocker;
+
+    [Header("Debug")]
+    [SerializeField] bool debugLogs = false;
+
+    bool _completed;
+    bool _running;
+
+    void Log(string msg, Object ctx = null)
+    {
+        if (debugLogs) Debug.Log($"[DoorPuzzleLeverSocket] {msg}", ctx ? ctx : this);
+    }
 
     public bool CanUseItem(ItemDefinition item)
     {
@@ -39,36 +45,91 @@ public class DoorPuzzleLeverSocket : MonoBehaviour, IItemUseHandler
 
     public void UseItem(ItemDefinition item, PlayerInventory user)
     {
-        if (!CanUseItem(item)) return;
+        if (!CanUseItem(item)) { Log("UseItem rejected by CanUseItem"); return; }
+        if (_running) { Log("UseItem ignored: already running"); return; }
+        _running = true;
+        Log("UseItem START");
 
-        // 1) consume from inventory if the item is consumable
-        if (item.ConsumableOnUse && user) user.TryRemove(item);
+        // 1) consume if needed
+        if (item.ConsumableOnUse && user)
+        {
+            var ok = user.TryRemove(item);
+            Log($"ConsumableOnUse → removed from inventory = {ok}");
+        }
 
-        // 2) swap visuals
+        // 2) visuals swap
         if (brokenVisual) brokenVisual.SetActive(false);
+
+        PlayableDirector toPlay = null;
+
+        // 3) spawn lever prefab and try to play its own director
         if (leverFixedPrefab && socketMount)
         {
-            Instantiate(leverFixedPrefab, socketMount.position, socketMount.rotation, socketMount);
+            var inst = Instantiate(leverFixedPrefab, socketMount.position, socketMount.rotation, socketMount);
+            Log($"Instantiated lever prefab '{inst.name}'", inst);
+
+            // Prefer a director on the instance
+            toPlay = inst.GetComponentInChildren<PlayableDirector>(true);
+            if (toPlay)
+            {
+                // Make sure the director references are valid (usually already set inside the prefab)
+                toPlay.time = 0;
+                toPlay.stopped -= OnTimelineStopped;
+                toPlay.stopped += OnTimelineStopped;
+                toPlay.Play();
+                Log("Playing prefab's PlayableDirector");
+            }
         }
 
-        // 3) play timeline
-        if (director)
+        // 4) fallback to the socket’s director
+        if (!toPlay && directorOnSocket)
         {
-            director.time = 0;
-            director.Play();
+            directorOnSocket.time = 0;
+            directorOnSocket.stopped -= OnTimelineStopped;
+            directorOnSocket.stopped += OnTimelineStopped;
+            directorOnSocket.Play();
+            Log("Playing socket PlayableDirector (fallback)");
+            toPlay = directorOnSocket;
         }
 
-        // 4) notify listeners
+        // 5) if there was no director at all, finish immediately
+        if (!toPlay)
+        {
+            Log("No PlayableDirector found — finishing immediately");
+            FinishSequence();
+        }
+    }
+
+    void OnTimelineStopped(PlayableDirector d)
+    {
+        d.stopped -= OnTimelineStopped;
+        Log("Timeline finished");
+        FinishSequence();
+    }
+
+    void FinishSequence()
+    {
+        if (_completed) return;
+        _completed = true;
+        _running = false;
+
+        // Notify receivers
+        int notified = 0;
         for (int i = 0; i < receivers.Count; i++)
         {
             var mb = receivers[i];
             if (!mb) continue;
             if (mb is ILeverUseReceiver r)
+            {
                 r.OnLeverUsed(this);
+                notified++;
+            }
         }
+        Log($"Notified {notified} ILeverUseReceiver(s)");
 
-        // 5) lock it if one-shot
-        _completed = true;
+        // Block interaction if needed
         if (interactBlocker) interactBlocker.enabled = false;
+
+        Log("UseItem END → completed=true");
     }
 }

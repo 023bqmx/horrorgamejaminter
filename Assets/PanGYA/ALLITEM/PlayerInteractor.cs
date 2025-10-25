@@ -125,25 +125,33 @@ public class PlayerInteractor : MonoBehaviour
     }
 
     // Helper that finds interface on hit object or parents
+    // PlayerInteractor.cs (drop-in replacement)
     T RaycastForComponentOrParent<T>(float range, LayerMask mask) where T : class
     {
-        if (!playerCamera) return null;
-        var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-        if (Physics.Raycast(ray, out var hit, range, mask, QueryTriggerInteraction.Collide))
-        {
-            // Try on this object
-            var asComp = hit.collider.GetComponent(typeof(T)) as T;
-            if (asComp != null) return asComp;
+    if (!playerCamera) return null;
 
-            // Or any parent
-            var t = hit.collider.transform;
-            while (t != null)
-            {
-                var maybe = t.GetComponent(typeof(T)) as T;
-                if (maybe != null) return maybe;
-                t = t.parent;
-            }
+    var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+    if (Physics.Raycast(ray, out var hit, range, mask, QueryTriggerInteraction.Collide))
+    {
+        // 1) exact object
+        var asComp = hit.collider.GetComponent(typeof(T)) as T;
+        if (asComp != null) return asComp;
+
+        // 2) walk up parents
+        var t = hit.collider.transform;
+        while (t != null)
+        {
+            var maybe = t.GetComponent(typeof(T)) as T;
+            if (maybe != null) return maybe;
+            t = t.parent;
         }
-        return null;
+
+        // 3) search children (covers “socket child under big wall mesh” case)
+        var mbs = hit.collider.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < mbs.Length; i++)
+            if (mbs[i] is T found) return found;
     }
+    return null;
+    }
+
 }
