@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using UnityEngine.Playables; // สำหรับ PlayableDirector (Timeline)
 
 public class RollingNumberMachine : MonoBehaviour
 {
@@ -28,12 +29,26 @@ public class RollingNumberMachine : MonoBehaviour
     public float resultGapDelay = 0.4f;
     public float resultStartDelay = 0.6f;
 
+    [Header("Screen Fade (before + after UI)")]
+    [Tooltip("CanvasGroup ของภาพ/Panel สีดำเต็มจอ (อยู่บนสุด)")]
+    public CanvasGroup blackFade;
+    [Tooltip("เวลาเฟดเข้าดำก่อนโชว์ UI")]
+    public float preFadeToBlackDuration = 0.6f;
+    [Tooltip("ค้างดำไว้ก่อนเริ่ม UI")]
+    public float preHoldBlack = 0.2f;
+
+    [Tooltip("หน่วงก่อนเริ่ม 'สว่างขึ้น' หลัง UI จบทั้งหมด")]
+    public float eyeOpenDelay = 0.0f;
+    [Tooltip("ระยะเวลาค่อยๆสว่างเหมือนลืมตา")]
+    public float eyeOpenDuration = 0.9f;
+    [Tooltip("เส้นโค้งการสว่าง (0→1)")]
+    public AnimationCurve eyeOpenCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
     [Header("Audio (play AFTER Result Text 2)")]
     public AudioSource voiceSource;
     public AudioClip voiceClip;
     [Range(0f, 1f)] public float voiceVolume = 1f;
     public bool playOneShot = true;
-    [Tooltip("ดีเลย์หลัง Result Text 2 แสดงเสร็จ ก่อนเริ่มเสียง")]
     public float voiceDelayAfterResult2 = 0f;
 
     [Header("Rolling Audio (Digit1 start → Digit3 stop)")]
@@ -46,6 +61,16 @@ public class RollingNumberMachine : MonoBehaviour
 
     [Tooltip("ให้เสียงหมุนเริ่มก่อน Digit1 เริ่มหมุนกี่วินาที")]
     public float preRollLeadTime = 1f;
+
+    [Header("Post UI → Timeline / Animator")]
+    public PlayableDirector timelineDirector;
+    public float postPlayDelay = 0f;
+    public Animator nextAnimator;
+    public string animTriggerName = "Play";
+
+    [Header("Camera Switch")]
+    public Camera playerCamera;
+    public Camera timelineCamera;
 
     private bool isRolling = false;
     private bool d1Done, d2Done, d3Done;
@@ -69,7 +94,15 @@ public class RollingNumberMachine : MonoBehaviour
         {
             rollingSource = gameObject.AddComponent<AudioSource>();
             rollingSource.playOnAwake = false;
-            rollingSource.spatialBlend = 0f; // 2D
+            rollingSource.spatialBlend = 0f;
+        }
+
+        // เตรียมแผ่นดำ
+        if (blackFade != null)
+        {
+            blackFade.gameObject.SetActive(true);
+            blackFade.alpha = 0f;           // เริ่มสว่าง
+            blackFade.blocksRaycasts = true; // กันคลิกลอด (ตามต้องการ)
         }
     }
 
@@ -84,7 +117,14 @@ public class RollingNumberMachine : MonoBehaviour
         isRolling = true;
         d1Done = d2Done = d3Done = false;
 
-        // --- pop-in ---
+        // ===== 1) ดำเข้าก่อนขึ้น UI =====
+        if (blackFade != null && preFadeToBlackDuration > 0f)
+        {
+            yield return StartCoroutine(FadeCanvasGroupCurve(blackFade, blackFade.alpha, 1f, preFadeToBlackDuration, AnimationCurve.EaseInOut(0,0,1,1)));
+            if (preHoldBlack > 0f) yield return new WaitForSeconds(preHoldBlack);
+        }
+
+        // ===== 2) Pop-in UI =====
         numberSlotUI.SetActive(true);
         numberSlotUI.transform.localScale = Vector3.zero;
 
@@ -100,7 +140,7 @@ public class RollingNumberMachine : MonoBehaviour
         numberSlotUI.transform.localScale = Vector3.one;
         canvasGroup.alpha = 1f;
 
-        // ===== เริ่ม "เสียงหมุน" ล่วงหน้าก่อน Digit1 =====
+        // ===== 3) เสียงหมุน (เริ่มก่อน Digit1) =====
         if (rollingLoopClip != null && rollingSource != null)
         {
             rollingSource.clip = rollingLoopClip;
@@ -116,14 +156,11 @@ public class RollingNumberMachine : MonoBehaviour
         if (preRollLeadTime > 0f)
             yield return new WaitForSeconds(preRollLeadTime);
 
-        // ===== Start Rolling =====
+        // ===== 4) เริ่มหมุนตัวเลข =====
         StartCoroutine(RollDigit(digit1, rollDuration + 0f * stopDelay, () => d1Done = true));
         StartCoroutine(RollDigit(digit2, rollDuration + 1f * stopDelay, () => d2Done = true));
         StartCoroutine(RollDigit(digit3, rollDuration + 2f * stopDelay, () => d3Done = true));
 
-        // (ย้ายการเล่น voice ออกไปหลัง Result Text 2 แล้ว)
-
-        // รอจนทั้งสามหลักหยุด
         yield return new WaitUntil(() => d1Done && d2Done && d3Done);
 
         // ปิดเสียงหมุน
@@ -142,13 +179,13 @@ public class RollingNumberMachine : MonoBehaviour
         if (gameData) { gameData.Digit1 = v1; gameData.Digit2 = v2; gameData.Digit3 = v3; }
         Debug.Log($"[Saved Result] {v1}{v2}{v3}");
 
-        // โชว์ผล
+        // ===== 5) โชว์ผล =====
         yield return new WaitForSeconds(resultStartDelay);
         yield return StartCoroutine(FadeInResult(resultText1));
         yield return new WaitForSeconds(resultGapDelay);
         yield return StartCoroutine(FadeInResult(resultText2));
 
-        // ===== เล่นเสียงหลัง Result Text 2 แสดงเสร็จ =====
+        // เล่นเสียงหลัง Result Text 2
         if (voiceSource && voiceClip)
         {
             if (voiceDelayAfterResult2 > 0f)
@@ -158,9 +195,22 @@ public class RollingNumberMachine : MonoBehaviour
             else { voiceSource.clip = voiceClip; voiceSource.volume = voiceVolume; voiceSource.Play(); }
         }
 
-        // ซ่อน UI
+        // ===== 6) ซ่อน UI =====
         yield return new WaitForSeconds(hideDelay);
         yield return StartCoroutine(FadeOutUI());
+
+        // ===== 7) “ลืมตา” ค่อยๆสว่างขึ้น =====
+        if (blackFade != null && eyeOpenDuration > 0f)
+        {
+            if (eyeOpenDelay > 0f) yield return new WaitForSeconds(eyeOpenDelay);
+            // จากดำ (1) → สว่าง (0)
+            yield return StartCoroutine(FadeCanvasGroupCurve(blackFade, 1f, 0f, eyeOpenDuration, eyeOpenCurve));
+            // เปิดคลิกลอดได้หลังสว่าง (ถ้าต้องการ)
+            blackFade.blocksRaycasts = false;
+        }
+
+        // ===== 8) สลับกล้อง → เล่น Timeline/Animator =====
+        yield return StartCoroutine(PlayPostSequence());
 
         isRolling = false;
     }
@@ -176,7 +226,6 @@ public class RollingNumberMachine : MonoBehaviour
         {
             digitText.text = Random.Range(0, 10).ToString();
 
-            // เสียงติ๊กทุกครั้งที่เปลี่ยนเลข (ถ้ามี)
             if (tickClip != null && rollingSource != null)
                 rollingSource.PlayOneShot(tickClip, tickVolume);
 
@@ -226,6 +275,50 @@ public class RollingNumberMachine : MonoBehaviour
         SetTextAlpha(resultText2, 0f);
     }
 
+    // ---------- play Timeline / Animator ----------
+    private IEnumerator PlayPostSequence()
+    {
+        SwitchToTimelineCamera();
+
+        if (postPlayDelay > 0f)
+            yield return new WaitForSeconds(postPlayDelay);
+
+        if (timelineDirector != null)
+        {
+            timelineDirector.time = 0;
+            timelineDirector.Play();
+        }
+
+        if (nextAnimator != null && !string.IsNullOrEmpty(animTriggerName))
+        {
+            nextAnimator.ResetTrigger(animTriggerName);
+            nextAnimator.SetTrigger(animTriggerName);
+        }
+    }
+
+    private void SwitchToTimelineCamera()
+    {
+        if (playerCamera != null)
+        {
+            var al = playerCamera.GetComponent<AudioListener>();
+            if (al) al.enabled = false;
+            playerCamera.enabled = false;
+            if (playerCamera.gameObject.activeSelf) playerCamera.gameObject.SetActive(false);
+        }
+
+        if (timelineCamera != null)
+        {
+            if (!timelineCamera.gameObject.activeSelf) timelineCamera.gameObject.SetActive(true);
+            timelineCamera.enabled = true;
+            var al = timelineCamera.GetComponent<AudioListener>();
+            if (al) al.enabled = true;
+        }
+        else
+        {
+            Debug.LogWarning("[RollingNumberMachine] timelineCamera is not assigned.");
+        }
+    }
+
     // ---------- helpers ----------
     private IEnumerator FadeAudio(AudioSource src, float from, float to, float dur)
     {
@@ -238,6 +331,21 @@ public class RollingNumberMachine : MonoBehaviour
             yield return null;
         }
         src.volume = to;
+    }
+
+    private IEnumerator FadeCanvasGroupCurve(CanvasGroup cg, float from, float to, float dur, AnimationCurve curve)
+    {
+        if (cg == null) yield break;
+        float t = 0f;
+        cg.alpha = from;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / dur);
+            cg.alpha = Mathf.LerpUnclamped(from, to, curve != null ? curve.Evaluate(k) : k);
+            yield return null;
+        }
+        cg.alpha = to;
     }
 
     private void SetTextAlpha(TextMeshProUGUI text, float alpha)
