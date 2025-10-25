@@ -2499,13 +2499,13 @@ MonoBehaviour:
   shakeAmplitude: 80
   shakeFrequency: 50
   shakeReturnLerp: 15
-  trendSource: {fileID: 0}
+  trendSource: {fileID: 8274052852071566236}
   riseLoop: {fileID: 8300000, guid: 47a1dafcbf6aa1445a63d434af14f93d, type: 3}
-  fallLoop: {fileID: 8300000, guid: 95c87e2d9c60af848b735c99280bc6da, type: 3}
-  trendBaseVolume: 1
+  fallLoop: {fileID: 8300000, guid: c1fb7e820967212469517b9e08569c74, type: 3}
+  trendBaseVolume: 0.45
   trendMaxExtraVolume: 0.6
-  trendPitch: 0.2
-  trendVolumeLerp: 20
+  trendPitch: 0.25
+  trendVolumeLerp: 35
   shakeSource: {fileID: 888148101338101734}
   shakeLoop: {fileID: 8300000, guid: acec41d4d0131734faab069483000bf1, type: 3}
   shakeBaseVolume: 0.8

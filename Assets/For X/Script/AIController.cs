@@ -77,9 +77,27 @@ public class AIController : MonoBehaviour
     [SerializeField] float footMinDistance = 1.8f;
     [SerializeField] float footMaxDistance = 22f;
     [SerializeField] bool zeroDoppler = true;
+    [Header("Voice (Grinlock)")]
+    public AudioSource voiceSrc;           // ใส่ AudioSource ไว้ที่ปาก/ตัวผี (3D, playOnAwake=false, loop=false)
+    public AudioClip keepSmileClip;        // คลิป "keep smiling"
+    public float keepSmileDelay = 2f;      // ดีเลย์หลังผู้เล่นยิ้ม
+    public float keepSmileCooldown = 6f;   // กันสแปม
+    [Tooltip("ต้องยังเมิน(ยิ้มอยู่)จนกว่าจะครบดีเลย์ถึงจะพูด")]
+    public bool requireStillIgnoring = true;
+
+    Coroutine _keepSmileRoutine;
+    float _lastKeepSmileTime = -999f;
+
+    [Header("Voice 3D Attenuation")]
+    [SerializeField] AudioRolloffMode voiceRolloff = AudioRolloffMode.Logarithmic;
+    [SerializeField] float voiceMinDistance = 2.5f;
+    [SerializeField] float voiceMaxDistance = 35f;
+    [SerializeField] bool voiceZeroDoppler = true;
+
     private void Awake()
     {
         ConfigureFootAudio3D();
+        ConfigureVoiceAudio3D();  // << เพิ่มบรรทัดนี้
     }
 
     void Start()
@@ -151,6 +169,8 @@ public class AIController : MonoBehaviour
             agent.isStopped = true;
             if (resumePatrolRoutine != null) StopCoroutine(resumePatrolRoutine);
             resumePatrolRoutine = StartCoroutine(ResumePatrolAfterDelay(true)); // pickClosest: true
+
+            if (prevChasing) TryScheduleKeepSmile();
         }
         else if (!ignorePlayer && prevIgnore)
         {
@@ -212,6 +232,34 @@ public class AIController : MonoBehaviour
         UpdateLocomotionBySpeed();  // ย้ายให้มาก่อน
         UpdateAnim();               // แล้วค่อยป้อนพารามิเตอร์
         UpdateFootsteps();
+    }
+    void TryScheduleKeepSmile()
+    {
+        if (!voiceSrc || !keepSmileClip) return;
+        if (Time.time - _lastKeepSmileTime < keepSmileCooldown) return;
+
+        if (_keepSmileRoutine != null) StopCoroutine(_keepSmileRoutine);
+        _keepSmileRoutine = StartCoroutine(KeepSmileRoutine());
+    }
+
+    IEnumerator KeepSmileRoutine()
+    {
+        float deadline = Time.time + keepSmileDelay;
+
+        while (Time.time < deadline)
+        {
+            // ถ้าตั้งให้ต้อง "ยังเมินอยู่" แต่ผู้เล่นเลิกยิ้มก่อนครบเวลา -> ยกเลิก
+            if (requireStillIgnoring && !ignorePlayer)
+            {
+                _keepSmileRoutine = null;
+                yield break;
+            }
+            yield return null;
+        }
+
+        voiceSrc.PlayOneShot(keepSmileClip);
+        _lastKeepSmileTime = Time.time;
+        _keepSmileRoutine = null;
     }
 
     void UpdateAnim()
@@ -419,6 +467,15 @@ public class AIController : MonoBehaviour
         footSrc.maxDistance = footMaxDistance;
         if (zeroDoppler) footSrc.dopplerLevel = 0f;        // ตัด Doppler
                                                            // ถ้าใช้ Custom rolloff: footSrc.SetCustomCurve(AudioSourceCurveType.CustomRolloff, yourCurve);
+    }
+    void ConfigureVoiceAudio3D()
+    {
+        if (!voiceSrc) return;
+        voiceSrc.spatialBlend = 1f;            // 3D
+        voiceSrc.rolloffMode = voiceRolloff;
+        voiceSrc.minDistance = voiceMinDistance;
+        voiceSrc.maxDistance = voiceMaxDistance;
+        if (voiceZeroDoppler) voiceSrc.dopplerLevel = 0f;
     }
     void OnDrawGizmosSelected()
     {
