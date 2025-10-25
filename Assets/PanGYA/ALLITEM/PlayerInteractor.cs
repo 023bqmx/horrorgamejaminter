@@ -130,17 +130,19 @@ public class PlayerInteractor : MonoBehaviour
         if (!selectedItem) return;
 
         // Find any IItemUseHandler (child/parent) at the crosshair
-        var target = RaycastForComponentOrParent<IItemUseHandler>(interactRange, interactMask);
-        if (target == null) return;
+    var target = RaycastForComponentOrParent<IItemUseHandler>(interactRange, interactMask);
+    if (target == null)
+    {
+    // NEW: allow using battery directly from bag when nothing is targeted
+    var binder = FindFirstObjectByType<FlashlightInventoryBinder>(FindObjectsInactive.Exclude);
+    if (binder && inventory && activeSlot >= 0 && activeSlot < inventory.Items.Count)
+    {
+        if (binder.UseBatteryFromInventorySlot(activeSlot))
+            return; // consumed battery → we're done
+    }
+    return; // nothing else to use
+    }
 
-        if (target.CanUseItem(selectedItem))
-        {
-            target.UseItem(selectedItem, inventory);
-        }
-        else
-        {
-            hoverUI?.Show("<b>Can't use that here</b>");
-        }
     }
 
     // -------- Ray helpers (as in your original file) --------
