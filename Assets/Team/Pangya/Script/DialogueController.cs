@@ -1,5 +1,8 @@
 // DialogueController.cs
 // Unity 6 / TextMeshPro
+// Plays ONE SFX when the dialogue starts, ONE SFX at the beginning of each new line,
+// and (optional) ONE SFX when the dialogue ends. No per-character SFX.
+
 using System.Collections;
 using UnityEngine;
 using TMPro;
@@ -17,8 +20,16 @@ public class DialogueController : MonoBehaviour
     [SerializeField] Image backdrop; // optional background image (can be null)
 
     [Header("Audio")]
-    [SerializeField] AudioSource voiceSource;  // for per-line voice
-    [SerializeField] AudioSource sfxSource;    // for per-char bleeps
+    [SerializeField] AudioSource voiceSource;  // per-line voice (optional)
+    [SerializeField] AudioSource sfxSource;    // SFX for start-of-dialogue / start-of-line / end-of-dialogue
+
+    [Header("SFX Clips (one-shots)")]
+    [Tooltip("Played once when a dialogue sequence starts (when triggered).")]
+    [SerializeField] AudioClip dialogueStartSfx;
+    [Tooltip("Played at the start of EVERY line (new line).")]
+    [SerializeField] AudioClip lineStartSfx;
+    [Tooltip("Played once when the dialogue sequence finishes (after fade out).")]
+    [SerializeField] AudioClip dialogueEndSfx;
 
     [Header("Safety")]
     [SerializeField] bool hideOnAwake = true;
@@ -39,27 +50,43 @@ public class DialogueController : MonoBehaviour
         }
         if (speakerText) speakerText.text = "";
         if (bodyText) bodyText.text = "";
+
+        if (voiceSource) { voiceSource.loop = false; }
+        if (sfxSource)   { sfxSource.loop   = false; }
     }
 
     public bool IsRunning => _isRunning;
 
+    /// <summary>
+    /// Start a dialogue sequence. (If you call this from a trigger, the start SFX will fire once.)
+    /// </summary>
     public void RunSequence(DialogueSequence seq, System.Action onComplete = null)
     {
+        if (seq == null) return;
         if (_isRunning)
         {
-            // Queueing could be added; for now, ignore overlapped calls.
             Debug.LogWarning("[Dialogue] Ignored: already running.");
             return;
         }
+
+        _isRunning = true; // latch immediately to prevent double-start in same frame
         _runRoutine = StartCoroutine(RunSequenceCo(seq, onComplete));
     }
 
     IEnumerator RunSequenceCo(DialogueSequence seq, System.Action onComplete)
     {
-        _isRunning = true;
+        // Dialogue START SFX (one-shot)
+        PlayOneShotExclusive(dialogueStartSfx);
+
+        // Enable UI interaction while visible
+        if (dialogueGroup)
+        {
+            dialogueGroup.interactable = true;
+            dialogueGroup.blocksRaycasts = true;
+        }
 
         // Fade in
-        yield return Fade(dialogueGroup, 0f, 1f, seq.fadeIn);
+        yield return Fade(dialogueGroup, dialogueGroup ? dialogueGroup.alpha : 0f, 1f, seq.fadeIn);
 
         var originalAlpha = dialogueGroup ? dialogueGroup.alpha : 1f;
         float flickerT = 0f;
@@ -71,15 +98,19 @@ public class DialogueController : MonoBehaviour
             if (speakerText) speakerText.text = line.speaker;
             if (bodyText) bodyText.text = "";
 
-            // Voice at line start
+            // LINE START SFX (one-shot)
+            PlayOneShotExclusive(lineStartSfx);
+
+            // Voice at line start (stop previous to avoid overlap)
+            if (voiceSource) voiceSource.Stop();
             if (voiceSource && line.voiceClip)
             {
                 voiceSource.clip = line.voiceClip;
-                voiceSource.volume = line.voiceVolume;
+                voiceSource.volume = Mathf.Clamp01(line.voiceVolume);
                 voiceSource.Play();
             }
 
-            // Typewriter
+            // Typewriter (no per-char SFX)
             string full = line.body ?? "";
             int revealed = 0;
             float cps = Mathf.Max(1f, seq.charsPerSecond);
@@ -89,12 +120,6 @@ public class DialogueController : MonoBehaviour
             {
                 revealed++;
                 if (bodyText) bodyText.text = full.Substring(0, revealed);
-
-                // Optional per-char SFX
-                if (seq.charSfx && sfxSource && (revealed % Mathf.Max(1, seq.sfxEveryNChars) == 0))
-                {
-                    sfxSource.PlayOneShot(seq.charSfx, seq.charSfxVolume);
-                }
 
                 // Subtle horror flicker while typing
                 if (seq.enableFlicker && dialogueGroup)
@@ -124,11 +149,33 @@ public class DialogueController : MonoBehaviour
         // Fade out
         yield return Fade(dialogueGroup, dialogueGroup ? dialogueGroup.alpha : 1f, 0f, seq.fadeOut);
 
+        // Dialogue END SFX (one-shot)
+        PlayOneShotExclusive(dialogueEndSfx);
+
+        // Cleanup UI & audio
         if (speakerText) speakerText.text = "";
         if (bodyText) bodyText.text = "";
+        if (voiceSource) { voiceSource.Stop(); voiceSource.clip = null; }
+
+        if (dialogueGroup)
+        {
+            dialogueGroup.interactable = false;
+            dialogueGroup.blocksRaycasts = false;
+        }
 
         _isRunning = false;
         onComplete?.Invoke();
+    }
+
+    // Plays a clip on sfxSource ensuring we don't overlap long tails:
+    // We stop the source, set the clip, then Play (instead of PlayOneShot).
+    void PlayOneShotExclusive(AudioClip clip, float volume = 1f)
+    {
+        if (!sfxSource || !clip) return;
+        sfxSource.Stop();
+        sfxSource.clip = clip;
+        sfxSource.volume = Mathf.Clamp01(volume);
+        sfxSource.Play();
     }
 
     static IEnumerator Fade(CanvasGroup g, float from, float to, float time)
