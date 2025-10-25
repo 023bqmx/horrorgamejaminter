@@ -2129,8 +2129,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55919ac34a26952479f3fc91f777b2fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 2
-  SprintSpeed: 5
+  MoveSpeed: 3
+  SprintSpeed: 3
   RotationSpeed: 1
   SpeedChangeRate: 10
   JumpHeight: 0
@@ -2672,7 +2672,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7415384113222922130, guid: 87d8a8bc84bb84a4b9a41f1e98c288ae, type: 3}
       propertyPath: maxSmileSeconds
-      value: 8
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

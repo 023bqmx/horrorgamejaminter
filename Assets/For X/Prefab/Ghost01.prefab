@@ -2154,22 +2154,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   searchDuration: 1
-  walkSpeed: 2
-  runSpeed: 7
+  walkSpeed: 4
+  runSpeed: 8
   arriveDistance: 0.6
   smileGate: {fileID: 0}
   trackingHealth: {fileID: 0}
   idleState: Idle
   walkState: Walk
   runState: Run
-  ignoreResumeDelay: 6
+  ignoreResumeDelay: 4
   footSrc: {fileID: 8999209805806914489}
   footClips:
   - {fileID: 8300000, guid: 9f43222cc53d58243a579c7e1cbab4c5, type: 3}
   stepSpeedThreshold: 0.5
   walkStepRate: 1
   runStepRate: 2.5
-  stepVolumeRange: {x: 0.15, y: 0.3}
+  stepVolumeRange: {x: 0.3, y: 1}
   pitchWalkRange: {x: 0.45, y: 0.55}
   pitchRunRange: {x: 0.65, y: 0.75}
   footRolloff: 0
@@ -2186,7 +2186,7 @@ MonoBehaviour:
   voiceMaxDistance: 35
   voiceZeroDoppler: 1
   jumpScareSceneName: JUMPSCENE
-  jumpLoadDelay: 0.15
+  jumpLoadDelay: 0
   oneShotCatch: 1
 --- !u!195 &5393085368498459397
 NavMeshAgent:

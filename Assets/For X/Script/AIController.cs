@@ -105,6 +105,9 @@ public class AIController : MonoBehaviour
 
     bool _caught = false;
 
+    public bool IsChasing => chasing;
+    public System.Action<bool> OnChaseStateChanged;
+
     private void Awake()
     {
         ConfigureFootAudio3D();
@@ -229,6 +232,8 @@ public class AIController : MonoBehaviour
         }
 
         prevIgnore = ignorePlayer;
+
+        if (chasing != prevChasing) OnChaseStateChanged?.Invoke(chasing);
         prevChasing = chasing;
 
         // --- Movement ---
