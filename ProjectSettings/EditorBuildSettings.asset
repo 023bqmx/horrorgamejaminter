@@ -18,11 +18,14 @@ EditorBuildSettings:
     path: Assets/Team/Bom/clip.unity
     guid: 474406cee0b49394f9c8cdadf6f6ba94
   - enabled: 1
-    path: Assets/Team/Bom/Mainmenu.unity
-    guid: 66fa6c3c9e6adae4b8515d43cb80317c
-  - enabled: 1
     path: Assets/Team/Bom/milltype/MyTown/MyTown.unity
     guid: 465019b089ab6d6409e5e01ac746f298
+  - enabled: 1
+    path: Assets/Team/Bom/Startmain.unity
+    guid: e6bd89718d79f4044ae6091179a0d4b4
+  - enabled: 1
+    path: Assets/For X/IntroScene.unity
+    guid: 4643d84741f97f64e9d548d1c6a41e52
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

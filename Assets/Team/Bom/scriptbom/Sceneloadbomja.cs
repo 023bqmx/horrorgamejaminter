@@ -5,8 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class Sceneloadbomja : MonoBehaviour
 {
+
     public void LoadScene(string sceneName)
     {
+        Debug.Log("Loading scene: " + sceneName);
         SceneManager.LoadScene(sceneName);
+        
     }
 }
