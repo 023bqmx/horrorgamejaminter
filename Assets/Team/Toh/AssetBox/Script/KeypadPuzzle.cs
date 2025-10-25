@@ -100,6 +100,9 @@ public class KeypadPuzzle : MonoBehaviour
         else
         {
             Debug.Log("❌ Wrong code!");
+            Debug.Log(gameData.Digit1);
+            Debug.Log(gameData.Digit2);
+            Debug.Log(gameData.Digit3);
             StartCoroutine(HandleWrong());
         }
     }
