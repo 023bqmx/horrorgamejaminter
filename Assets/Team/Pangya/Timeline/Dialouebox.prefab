@@ -13,8 +13,6 @@ GameObject:
   - component: {fileID: 7874172711006426736}
   - component: {fileID: 1793951082900880119}
   - component: {fileID: 637130645987259086}
-  - component: {fileID: 6263203131095018104}
-  - component: {fileID: 7871442987034961754}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -105,58 +103,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68abc1ce0e4597045835d95abce2183f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  root: {fileID: 1793951082900880119}
+  dialogueGroup: {fileID: 0}
   speakerText: {fileID: 6917078136426471722}
   bodyText: {fileID: 8499622218976041973}
-  portraitImage: {fileID: 0}
+  backdrop: {fileID: 0}
   voiceSource: {fileID: 0}
-  typeBlipSource: {fileID: 0}
-  typeBlip: {fileID: 0}
-  blipEveryNChars: 2
-  blipPitchJitter: 0.5
-  defaultAutoMode: 0
-  fallbackCharsPerSecond: 24
-  timePerChar: 0.035
-  allowSkipTypingWithClick: 0
-  glitchChance: 0.05
-  glitchFlashSeconds: 0.02
-  glitchAlphabet: "#$%&@!?\\/\u2588\u2593\u2591"
-  clickGuardSecondsOnStart: 0.05
-  clickGuardSecondsOnEnd: 0.25
---- !u!114 &6263203131095018104
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 1000347419244367302, guid: fe2690185986fdc4a985ea7b490734a5, type: 3}
-  m_PrefabInstance: {fileID: 1781848610030536712}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 274835888851827357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54cd675b96625eb4787417ade5da78e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  root: {fileID: 1793951082900880119}
-  controller: {fileID: 637130645987259086}
-  fadeInDuration: 0.1
-  fadeOutDuration: 0.2
-  hideOnStart: 1
---- !u!114 &7871442987034961754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 4409133381331609124, guid: fe2690185986fdc4a985ea7b490734a5, type: 3}
-  m_PrefabInstance: {fileID: 1781848610030536712}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 274835888851827357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54cd675b96625eb4787417ade5da78e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  root: {fileID: 1793951082900880119}
-  controller: {fileID: 637130645987259086}
-  fadeInDuration: 0.1
-  fadeOutDuration: 0.2
-  hideOnStart: 1
+  sfxSource: {fileID: 0}
+  hideOnAwake: 1
 --- !u!1 &2078768689177529367
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,7 +576,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

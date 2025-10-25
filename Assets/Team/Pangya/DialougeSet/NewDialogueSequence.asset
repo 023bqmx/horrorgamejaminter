@@ -18,6 +18,11 @@ MonoBehaviour:
     voiceClip: {fileID: 0}
     voiceVolume: 0
     holdExtra: 0
+  - speaker: GOON
+    body: I Hate YOU NIGGER
+    voiceClip: {fileID: 0}
+    voiceVolume: 0
+    holdExtra: 0
   charsPerSecond: 28
   punctuationDelay: 0.12
   fadeIn: 0.15
