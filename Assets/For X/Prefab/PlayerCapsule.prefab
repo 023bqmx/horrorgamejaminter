@@ -2766,6 +2766,7 @@ GameObject:
   - component: {fileID: 7729183537323594508}
   - component: {fileID: 3663917430669915104}
   - component: {fileID: 1276490317495052988}
+  - component: {fileID: 8286984148316011808}
   m_Layer: 6
   m_Name: PlayerCapsule
   m_TagString: Player
@@ -3039,6 +3040,32 @@ MonoBehaviour:
   pickKey: 101
   useKey: 102
   activeSlot: 3
+--- !u!114 &8286984148316011808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848737228372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54316cb9851daa740a6a9fae1c051699, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTarget: {fileID: 4135013735270702856}
+  autoFindByTag: 1
+  enemyTag: Enemy
+  refreshEnemiesEvery: 1
+  extraTargets: []
+  outerRadius: 12
+  innerRadius: 3.5
+  posAmplitude: 0.5
+  rotAmplitude: 0.7
+  frequency: 6
+  followLerp: 18
+  scaleByEnemySpeed: 1
+  enemyMoveThreshold: 0.1
+  enemySpeedMax: 6
 --- !u!1 &8816363458050775604
 GameObject:
   m_ObjectHideFlags: 0
