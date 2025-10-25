@@ -10907,8 +10907,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993aa7e716565044a8888f119d6beb47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pipelineForThisScene: {fileID: 11400000, guid: 0e6cd34d319e97b4584e43e56043abeb, type: 2}
-  useQualityOverrideInstead: 1
 --- !u!1 &717467429
 GameObject:
   m_ObjectHideFlags: 0
@@ -12597,8 +12595,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993aa7e716565044a8888f119d6beb47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pipelineForThisScene: {fileID: 0}
-  useQualityOverrideInstead: 1
 --- !u!114 &938079973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13458,7 +13454,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &999096774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13471,8 +13467,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993aa7e716565044a8888f119d6beb47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pipelineForThisScene: {fileID: 11400000, guid: 0e6cd34d319e97b4584e43e56043abeb, type: 2}
-  useQualityOverrideInstead: 1
 --- !u!4 &999096775
 Transform:
   m_ObjectHideFlags: 0

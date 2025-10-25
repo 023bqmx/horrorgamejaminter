@@ -52,4 +52,5 @@ public class VideoEndHandler : MonoBehaviour
             if (lockCursor) Cursor.lockState = lockMode;
         }
     }
+
 }

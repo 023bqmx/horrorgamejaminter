@@ -1,7 +1,8 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
-using UnityEngine.Playables; // สำหรับ PlayableDirector (Timeline)
+using UnityEngine.Playables;            // Timeline
+using UnityEngine.SceneManagement;     // Scene load
 
 public class RollingNumberMachine : MonoBehaviour
 {
@@ -68,9 +69,20 @@ public class RollingNumberMachine : MonoBehaviour
     public Animator nextAnimator;
     public string animTriggerName = "Play";
 
-    [Header("Camera Switch")]
-    public Camera playerCamera;
-    public Camera timelineCamera;
+    [Header("Camera Switch (Non-Cinemachine)")]
+    public Camera playerCamera;     // เริ่มที่กล้องนี้
+    public Camera timelineCamera;   // กล้องที่ Timeline ใช้
+
+    [Header("Scene Change After Timeline")]
+    [Tooltip("ชื่อซีนถัดไป (ดีฟอลต์: Stang)")]
+    public string nextSceneName = "Stang";
+    [Tooltip("เฟดดำก่อนโหลดซีน (0 = โหลดทันที)")]
+    public float fadeToBlackBeforeLoadDuration = 0f;
+    public float holdBlackBeforeLoad = 0.1f;
+
+    [Header("Misc")]
+    [Tooltip("เริ่มฉากแบบมืดสนิทตั้งแต่เฟรมแรกหรือไม่ (กันภาพวับ)")]
+    public bool startBlackOnAwake = false;
 
     private bool isRolling = false;
     private bool d1Done, d2Done, d3Done;
@@ -90,6 +102,7 @@ public class RollingNumberMachine : MonoBehaviour
         SetTextAlpha(resultText2, 0f);
         numberSlotUI.SetActive(false);
 
+        // Rolling audio source
         if (rollingSource == null)
         {
             rollingSource = gameObject.AddComponent<AudioSource>();
@@ -97,13 +110,25 @@ public class RollingNumberMachine : MonoBehaviour
             rollingSource.spatialBlend = 0f;
         }
 
-        // เตรียมแผ่นดำ
+        // แผ่นดำ
         if (blackFade != null)
         {
             blackFade.gameObject.SetActive(true);
-            blackFade.alpha = 0f;           // เริ่มสว่าง
-            blackFade.blocksRaycasts = true; // กันคลิกลอด (ตามต้องการ)
+            blackFade.blocksRaycasts = true;
+            blackFade.alpha = startBlackOnAwake ? 1f : 0f;
         }
+
+        // ไม่ให้ Timeline เล่นเอง
+        if (timelineDirector)
+        {
+            timelineDirector.playOnAwake = false;
+            timelineDirector.extrapolationMode = DirectorWrapMode.None; // ให้หยุดจริงเมื่อจบ
+            timelineDirector.time = 0;
+            timelineDirector.Stop();
+        }
+
+        // เริ่มที่กล้องผู้เล่น
+        SwitchToPlayerCamera();
     }
 
     public void TriggerRoll()
@@ -205,16 +230,16 @@ public class RollingNumberMachine : MonoBehaviour
             if (eyeOpenDelay > 0f) yield return new WaitForSeconds(eyeOpenDelay);
             // จากดำ (1) → สว่าง (0)
             yield return StartCoroutine(FadeCanvasGroupCurve(blackFade, 1f, 0f, eyeOpenDuration, eyeOpenCurve));
-            // เปิดคลิกลอดได้หลังสว่าง (ถ้าต้องการ)
-            blackFade.blocksRaycasts = false;
+            blackFade.blocksRaycasts = false; // เปิดคลิกลอดได้หลังสว่าง
         }
 
-        // ===== 8) สลับกล้อง → เล่น Timeline/Animator =====
+        // ===== 8) สลับกล้อง → เล่น Timeline/Animator (เกิดหลังฉากดำจบ) =====
         yield return StartCoroutine(PlayPostSequence());
 
         isRolling = false;
     }
 
+    // ---------- Rolling ----------
     private IEnumerator RollDigit(TextMeshProUGUI digitText, float rollTime, System.Action onDone)
     {
         if (!digitText) { onDone?.Invoke(); yield break; }
@@ -275,24 +300,88 @@ public class RollingNumberMachine : MonoBehaviour
         SetTextAlpha(resultText2, 0f);
     }
 
-    // ---------- play Timeline / Animator ----------
+    // ---------- Post: สลับกล้อง + เล่น Timeline/Animator ----------
     private IEnumerator PlayPostSequence()
     {
-        SwitchToTimelineCamera();
+        SwitchToTimelineCamera(); // แสดง Timeline หลังฉากดำจบ
 
         if (postPlayDelay > 0f)
             yield return new WaitForSeconds(postPlayDelay);
 
         if (timelineDirector != null)
         {
+            // ให้หยุดจริงตอนจบ และไม่พึ่ง event อย่างเดียว
+            timelineDirector.extrapolationMode = DirectorWrapMode.None;
             timelineDirector.time = 0;
             timelineDirector.Play();
+
+            // รอจนเล่นจบ (กันกรณี WrapMode Hold/Paused)
+            yield return StartCoroutine(WaitTimelineThenProceed());
         }
 
         if (nextAnimator != null && !string.IsNullOrEmpty(animTriggerName))
         {
             nextAnimator.ResetTrigger(animTriggerName);
             nextAnimator.SetTrigger(animTriggerName);
+        }
+    }
+
+    private IEnumerator WaitTimelineThenProceed()
+    {
+        if (timelineDirector == null) yield break;
+
+        // รอจนไม่ Playing หรือเวลาถึงระยะเวลา Timeline
+        while (timelineDirector.state == PlayState.Playing &&
+               timelineDirector.time < (timelineDirector.duration - 0.01f))
+        {
+            yield return null;
+        }
+
+        // โหลดซีนถัดไป (Stang) — เฟดดำก่อนโหลดถ้าตั้งไว้
+        if (fadeToBlackBeforeLoadDuration > 0f && blackFade != null)
+        {
+            blackFade.blocksRaycasts = true;
+            yield return StartCoroutine(FadeCanvasGroupCurve(
+                blackFade, blackFade.alpha, 1f, fadeToBlackBeforeLoadDuration, AnimationCurve.EaseInOut(0,0,1,1)));
+            if (holdBlackBeforeLoad > 0f) yield return new WaitForSeconds(holdBlackBeforeLoad);
+        }
+
+        LoadNextSceneNow();
+    }
+
+    private void LoadNextSceneNow()
+    {
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("[RollingNumberMachine] nextSceneName is empty. Please set it (e.g., 'Stang').");
+        }
+    }
+
+    // ---------- Camera Switch ----------
+    private void SwitchToPlayerCamera()
+    {
+        if (timelineCamera != null)
+        {
+            var al = timelineCamera.GetComponent<AudioListener>();
+            if (al) al.enabled = false;
+            timelineCamera.enabled = false;
+            if (timelineCamera.gameObject.activeSelf) timelineCamera.gameObject.SetActive(false);
+        }
+
+        if (playerCamera != null)
+        {
+            if (!playerCamera.gameObject.activeSelf) playerCamera.gameObject.SetActive(true);
+            playerCamera.enabled = true;
+            var al = playerCamera.GetComponent<AudioListener>();
+            if (al) al.enabled = true;
+        }
+        else
+        {
+            Debug.LogWarning("[RollingNumberMachine] playerCamera is not assigned.");
         }
     }
 
@@ -317,6 +406,13 @@ public class RollingNumberMachine : MonoBehaviour
         {
             Debug.LogWarning("[RollingNumberMachine] timelineCamera is not assigned.");
         }
+    }
+
+    void OnDestroy()
+    {
+        // ไม่ต้องพึ่ง event แล้ว แต่กันไว้เผื่อไปผูกไว้ที่อื่น
+        if (timelineDirector != null)
+            timelineDirector.stopped -= _ => { };
     }
 
     // ---------- helpers ----------

@@ -23748,6 +23748,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 125387693}
     - target: {fileID: 3401210411780627146, guid: 039b104bc5a3cd443800b1576da1340c, type: 3}
+      propertyPath: nextSceneName
+      value: Stang
+      objectReference: {fileID: 0}
+    - target: {fileID: 3401210411780627146, guid: 039b104bc5a3cd443800b1576da1340c, type: 3}
       propertyPath: rollingSource
       value: 
       objectReference: {fileID: 1013804394}
@@ -23770,6 +23774,14 @@ PrefabInstance:
     - target: {fileID: 3401210411780627146, guid: 039b104bc5a3cd443800b1576da1340c, type: 3}
       propertyPath: rollingLoopVolume
       value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3401210411780627146, guid: 039b104bc5a3cd443800b1576da1340c, type: 3}
+      propertyPath: startBlackOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3401210411780627146, guid: 039b104bc5a3cd443800b1576da1340c, type: 3}
+      propertyPath: nextSceneBuildIndex
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3401210411780627146, guid: 039b104bc5a3cd443800b1576da1340c, type: 3}
       propertyPath: voiceDelayAfterDigit3Start
@@ -387794,6 +387806,82 @@ Transform:
   - {fileID: 2123382559}
   m_Father: {fileID: 1272011856}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1 &1958850922
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1958850924}
+  - component: {fileID: 1958850923}
+  m_Layer: 0
+  m_Name: timelinechangescene
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1958850923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958850922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe65c0fa3f65a9846a0ce61f4f5a572c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  director: {fileID: 1024112361}
+  blackFade: {fileID: 1016320922}
+  nextSceneName: Satang
+  nextSceneBuildIndex: -1
+  fadeDuration: 0.6
+  holdBlack: 0.15
+  fadeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  playDirectorOnStart: 0
+  ensureStopEvent: 1
+--- !u!4 &1958850924
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958850922}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 135.57033, y: 11.979598, z: 211.91075}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1961690639
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -425700,3 +425788,4 @@ SceneRoots:
   - {fileID: 1027946511}
   - {fileID: 1517683529}
   - {fileID: 992376113}
+  - {fileID: 1958850924}
