@@ -128,8 +128,8 @@ public class SmileGateByMouthWideAuto : MonoBehaviour
         }
 
         // 3) Debug ∑ÿ° ~10 ‡ø√¡
-        if (Time.frameCount % 10 == 0)
-            Debug.Log($"[SmileGate] idx={usedFaceIndex} mw={lastMouthWide:F3} conf={lastConfidence:F2} raw={rawSmiling} gate={isSmiling} cd={isCoolingDown} charge={charge01:F2}");
+        //if (Time.frameCount % 10 == 0)
+        //    Debug.Log($"[SmileGate] idx={usedFaceIndex} mw={lastMouthWide:F3} conf={lastConfidence:F2} raw={rawSmiling} gate={isSmiling} cd={isCoolingDown} charge={charge01:F2}");
     }
 
     // ===== Helpers =====

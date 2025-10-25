@@ -2,6 +2,7 @@ using StarterAssets;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public class AIController : MonoBehaviour
 {
@@ -94,10 +95,21 @@ public class AIController : MonoBehaviour
     [SerializeField] float voiceMaxDistance = 35f;
     [SerializeField] bool voiceZeroDoppler = true;
 
+    // ========== Catch / Jumpscare ==========
+    [Header("Catch / Jumpscare")]
+    [SerializeField] string jumpScareSceneName = "JumpscareScene"; // ตั้งชื่อซีนใน Inspector
+    [SerializeField, Tooltip("ดีเลย์เล็กน้อยก่อนโหลดซีน")]
+    float jumpLoadDelay = 0.15f;
+    [SerializeField, Tooltip("ครั้งเดียวต่อการโดนจับ ป้องกันซ้อนกันหลายครั้ง")]
+    bool oneShotCatch = true;
+
+    bool _caught = false;
+
     private void Awake()
     {
         ConfigureFootAudio3D();
         ConfigureVoiceAudio3D();  // << เพิ่มบรรทัดนี้
+        EnsureKinematicRigidbody(); // << เพิ่มบรรทัดนี้
     }
 
     void Start()
@@ -143,6 +155,14 @@ public class AIController : MonoBehaviour
 
         // ต้องอยู่ใน viewRadius + viewAngle เท่านั้น (ไม่เช็คสิ่งกีดขวางตามที่ต้องการ)
         return IsWithinViewCone(player);
+    }
+    void EnsureKinematicRigidbody()
+    {
+        // ถ้าไม่มี Rigidbody ที่ราก ให้ใส่ให้เอง (จำเป็นมากสำหรับรับ OnTrigger จากลูก)
+        var rb = GetComponent<Rigidbody>();
+        if (!rb) rb = gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = true;   // ใช้ร่วมกับ NavMeshAgent ได้
+        rb.useGravity = false;
     }
 
     void Update()
@@ -232,6 +252,40 @@ public class AIController : MonoBehaviour
         UpdateLocomotionBySpeed();  // ย้ายให้มาก่อน
         UpdateAnim();               // แล้วค่อยป้อนพารามิเตอร์
         UpdateFootsteps();
+    }
+    // เรียกจาก Trigger/Collision ของ hitbox
+    void TryCatchPlayerNow()
+    {
+        if (_caught && oneShotCatch) { Debug.Log("[AI] already caught (oneShot)"); return; }
+        if (!chasing) { Debug.Log("[AI] hit but NOT chasing -> ignore"); return; }
+
+        _caught = true;
+        Debug.Log("[AI] Jumpscare!!!");
+        if (agent) agent.isStopped = true;
+        StartCoroutine(LoadJumpScareAfterDelay());
+    }
+
+    IEnumerator LoadJumpScareAfterDelay()
+    {
+        if (jumpLoadDelay > 0f) yield return new WaitForSeconds(jumpLoadDelay);
+        Debug.Log($"[AI] Loading scene '{jumpScareSceneName}'");
+        SceneManager.LoadScene(jumpScareSceneName, LoadSceneMode.Single);
+    }
+
+    // ---------- รองรับทั้ง Trigger และ Collision ----------
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log($"[AI] OnTriggerEnter from {other.name} (layer={LayerMask.LayerToName(other.gameObject.layer)}), chasing={chasing}");
+        if (IsPlayerCollider(other)) TryCatchPlayerNow();
+    }
+
+    // ช่วยเช็คว่าเป็นผู้เล่นจริงไหม (เผื่อโดนชิ้นส่วนอื่น)
+    bool IsPlayerCollider(Collider c)
+    {
+        if (!c) return false;
+        if (c.CompareTag("Player")) return true;                         // ให้ตั้ง Tag ผู้เล่น = "Player"
+        if (c.GetComponentInParent<FirstPersonController>() != null) return true;
+        return false;
     }
     void TryScheduleKeepSmile()
     {

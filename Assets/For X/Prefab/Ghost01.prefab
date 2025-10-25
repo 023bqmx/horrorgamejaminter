@@ -1346,7 +1346,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2333811848836295323}
-  - component: {fileID: 6826132654655177200}
   m_Layer: 0
   m_Name: Armature
   m_TagString: Untagged
@@ -1370,27 +1369,6 @@ Transform:
   - {fileID: 7642716359088271929}
   m_Father: {fileID: 6688840298926701061}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &6826132654655177200
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4250439069400260817}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.43, y: 1, z: 0.28}
-  m_Center: {x: 0, y: 0.6, z: 0}
 --- !u!1 &4369365816525123429
 GameObject:
   m_ObjectHideFlags: 0
@@ -2072,6 +2050,7 @@ GameObject:
   - component: {fileID: 4075558752765983700}
   - component: {fileID: 6378745676365112188}
   - component: {fileID: 5393085368498459397}
+  - component: {fileID: 3229695805347764567}
   m_Layer: 0
   m_Name: Ghost01
   m_TagString: Enemy
@@ -2206,6 +2185,9 @@ MonoBehaviour:
   voiceMinDistance: 2.5
   voiceMaxDistance: 35
   voiceZeroDoppler: 1
+  jumpScareSceneName: JUMPSCENE
+  jumpLoadDelay: 0.15
+  oneShotCatch: 1
 --- !u!195 &5393085368498459397
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2228,6 +2210,27 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!65 &3229695805347764567
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6311892169546768575}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.43, y: 1, z: 0.28}
+  m_Center: {x: 0, y: 0.6, z: 0}
 --- !u!1 &6403849908521891375
 GameObject:
   m_ObjectHideFlags: 0
