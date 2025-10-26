@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1307126031, guid: 6d6301346a351ad488b475b808928eac, type: 3}
+  m_Sprite: {fileID: 691806864, guid: 8b923a5d4238ae84081cf3e406b5c8ba, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -994,7 +994,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1307126031, guid: 6d6301346a351ad488b475b808928eac, type: 3}
+  m_Sprite: {fileID: 691806864, guid: 8b923a5d4238ae84081cf3e406b5c8ba, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1559,7 +1559,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1307126031, guid: 6d6301346a351ad488b475b808928eac, type: 3}
+  m_Sprite: {fileID: 691806864, guid: 8b923a5d4238ae84081cf3e406b5c8ba, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2951,7 +2951,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkLoop: {fileID: 8300000, guid: 62756743cd586434199b319a3929e0eb, type: 3}
-  sprintLoop: {fileID: 8300000, guid: 5924e04737b2531459a8ceca4f08b21e, type: 3}
+  sprintLoop: {fileID: 8300000, guid: 62756743cd586434199b319a3929e0eb, type: 3}
   maxVolume: 1
   fadeInSpeed: 6
   fadeOutSpeed: 8
