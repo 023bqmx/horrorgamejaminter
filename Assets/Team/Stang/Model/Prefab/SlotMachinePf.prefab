@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4630817999136361126}
-  m_Layer: 0
+  - component: {fileID: 3168668416238827889}
+  m_Layer: 7
   m_Name: SlotMachinePf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34,6 +35,27 @@ Transform:
   - {fileID: 6738373999571372558}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3168668416238827889
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4063390608321974523}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.44, y: 1, z: 0.43}
+  m_Center: {x: 0.28, y: 0, z: 0.06}
 --- !u!1001 &1119488435047375560
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -90,6 +112,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Slot
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f99524c5cf7779a4882ba33d274245d1, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -122,15 +148,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a77409739da9ea84c923f1d8a72164b2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.27199993
+      value: 0.114
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a77409739da9ea84c923f1d8a72164b2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0759325
+      value: -0.076
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a77409739da9ea84c923f1d8a72164b2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.5257589
+      value: 0.722
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a77409739da9ea84c923f1d8a72164b2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -163,6 +189,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: a77409739da9ea84c923f1d8a72164b2, type: 3}
       propertyPath: m_Name
       value: CasinoChair (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a77409739da9ea84c923f1d8a72164b2, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -241,6 +271,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 6e6d68c8fdecce848a43fc93f6e0a640, type: 3}
       propertyPath: m_Name
       value: Lever
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6e6d68c8fdecce848a43fc93f6e0a640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

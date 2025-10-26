@@ -2,6 +2,8 @@
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.Playables;   // << สำคัญ: เพื่อใช้ PlayableDirector
+using UnityEngine.Events;
 
 public class KeypadPuzzle : MonoBehaviour
 {
@@ -28,19 +30,27 @@ public class KeypadPuzzle : MonoBehaviour
     public Color normalOutlineColor = Color.white;
     public Color wrongOutlineColor = Color.red;
 
+    // ---- Timeline hooks ----
+    [Header("Timeline (play when correct)")]
+    public PlayableDirector[] directorsToPlay;   // ลาก heavydoor.PlayableDirector มาวาง
+    public bool playTimelineOnce = true;
+    public UnityEvent onSolved;                  // เผื่ออยากยิงอย่างอื่นเพิ่ม (ไฟ/เสียง/ฯลฯ)
+
     string playerInput = "";
     bool isChecking = false;
+    bool timelinePlayed = false;
 
     void Start()
     {
-        if (!gameData) gameData = FindObjectOfType<GameData>();
+        gameData = gameData ? gameData : GameData.Instance;
+
+        if (!gameData) gameData = GameData.Instance ?? FindObjectOfType<GameData>();
 
         if (inputDisplay) inputDisplay.text = "";
         if (outlineImage) outlineImage.color = normalOutlineColor;
         if (correctUI) correctUI.SetActive(false);
         if (wrongUI) wrongUI.SetActive(false);
 
-        // debug โค้ดปัจจุบัน (คำนวณสด)
         Debug.Log("[KeypadPuzzle] Current correct code: " + BuildCorrectCode());
     }
 
@@ -48,7 +58,6 @@ public class KeypadPuzzle : MonoBehaviour
     {
         if (isChecking) return;
 
-        // รองรับพิมพ์จากคีย์บอร์ด (ถ้าใช้ปุ่ม UI ให้เรียก PressDigit/PressBackspace/PressEnter)
         foreach (char c in Input.inputString)
         {
             if (char.IsDigit(c)) PressDigit(c - '0');
@@ -75,7 +84,7 @@ public class KeypadPuzzle : MonoBehaviour
         if (isChecking) return;
         if (playerInput.Length > 0)
         {
-            playerInput = playerInput.Substring(0, playerInput.Length - 1);
+            playerInput = playerInput[..^1];
             UpdateDisplay();
         }
     }
@@ -90,7 +99,6 @@ public class KeypadPuzzle : MonoBehaviour
     string BuildCorrectCode()
     {
         if (!gameData) return "";
-        // กันค่าหลุดช่วง/ติดลบ และคง leading zero
         int d1 = Mathf.Clamp(gameData.Digit1, 0, 9);
         int d2 = Mathf.Clamp(gameData.Digit2, 0, 9);
         int d3 = Mathf.Clamp(gameData.Digit3, 0, 9);
@@ -106,10 +114,9 @@ public class KeypadPuzzle : MonoBehaviour
     {
         isChecking = true;
 
-        string correct = BuildCorrectCode();            // <<< คำนวณสดทุกครั้ง
-        bool ok = string.Equals(playerInput, correct, System.StringComparison.Ordinal);
+        string correct = BuildCorrectCode();
+        bool ok = playerInput == correct;
 
-        // debug ช่วยไล่ปัญหา
         Debug.Log($"[KeypadPuzzle] Input={playerInput}  Correct={correct}  Match={ok}");
 
         if (ok) StartCoroutine(HandleCorrect());
@@ -118,14 +125,17 @@ public class KeypadPuzzle : MonoBehaviour
 
     IEnumerator HandleCorrect()
     {
-        if (audioSource && correctSound) audioSource.PlayOneShot(correctSound);
+        // fire timeline(s) first, zero-latency
+        PlayTimelines();
 
+        if (audioSource && correctSound) audioSource.PlayOneShot(correctSound);
         if (correctUI) yield return StartCoroutine(PopUI(correctUI));
 
         yield return new WaitForSeconds(0.3f);
         if (puzzleUI) puzzleUI.SetActive(false);
 
         isChecking = false;
+        onSolved?.Invoke();   // optional extra hooks
     }
 
     IEnumerator HandleWrong()
@@ -144,6 +154,26 @@ public class KeypadPuzzle : MonoBehaviour
         playerInput = "";
         UpdateDisplay();
         isChecking = false;
+    }
+
+    void PlayTimelines()
+    {
+        if (playTimelineOnce && timelinePlayed) return;
+
+        if (directorsToPlay != null)
+        {
+            foreach (var d in directorsToPlay)
+            {
+                if (!d) continue;
+                // รีเซ็ตให้เริ่มเฟรมแรกแบบ snap แล้วค่อย Play
+                d.time = 0;
+                d.Evaluate();
+                d.Play();
+                Debug.Log($"[KeypadPuzzle] Timeline played on {d.gameObject.name}");
+            }
+        }
+
+        timelinePlayed = true;
     }
 
     IEnumerator PopUI(GameObject ui)

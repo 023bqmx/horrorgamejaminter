@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Team/Pangya/Roblxo.unity
     guid: 3172903f7b7840c4db1367f9cf0e8f4e
   - enabled: 1
-    path: Assets/For X/JUMPSCENE.unity
+    path: Assets/Final/JUMPSCENE.unity
     guid: f7e01bbbcb5ba9a4b84eef6ecfdc8803
   - enabled: 1
     path: Assets/Final/clip.unity
@@ -27,8 +27,11 @@ EditorBuildSettings:
     path: Assets/Final/MyTown.unity
     guid: 465019b089ab6d6409e5e01ac746f298
   - enabled: 1
-    path: Assets/Team/Stang/Satang.unity
+    path: Assets/Final/MAin.unity
     guid: 9e75d893e0bfb9445a53bd6c9ec7dc36
+  - enabled: 1
+    path: Assets/Final/metrotime.unity
+    guid: 43777c8e948c97d4db881d5662f0642f
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

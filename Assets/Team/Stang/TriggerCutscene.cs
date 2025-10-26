@@ -23,6 +23,8 @@ public class TriggerCutscene : MonoBehaviour
     private bool hasPlayed = false;
     private Collider triggerCol;
 
+    [SerializeField] GameObject grinlock;
+
     private void Awake()
     {
         triggerCol = GetComponent<Collider>();
@@ -77,6 +79,7 @@ public class TriggerCutscene : MonoBehaviour
         }
 
         // ?? กลับกล้องหลัก
+        grinlock.SetActive(true);
         if (mainCamera) mainCamera.enabled = true;
         if (cinematicCamera) cinematicCamera.enabled = false;
     }

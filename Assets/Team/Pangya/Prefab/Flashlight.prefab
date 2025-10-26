@@ -225,8 +225,8 @@ MonoBehaviour:
   startOn: 1
   maxIntensity: 120
   onOffLerpSpeed: 16
-  useBattery: 1
-  batterySeconds: 10.39
+  useBattery: 0
+  batterySeconds: 50
   baseDrainPerSecond: 1
   intensityDrainMultiplier: 1
   idleDrainPerSecond: 0
