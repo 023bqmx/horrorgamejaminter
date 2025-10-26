@@ -11647,7 +11647,7 @@ MonoBehaviour:
   disableColliderAfterTrigger: 1
   rewindBeforePlay: 0
   mainCamera: {fileID: 1774107452}
-  cinematicCamera: {fileID: 1448271236}
+  cinematicCamera: {fileID: 0}
   objectToDestroy: {fileID: 372813106}
   grinlock: {fileID: 1490980551}
 --- !u!65 &408316482
@@ -17046,7 +17046,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &607174707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26519,7 +26519,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!320 &960661309
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -38531,7 +38531,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!20 &1384718156
 Camera:
   m_ObjectHideFlags: 0
@@ -40511,11 +40511,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -450, z: -4.648}
---- !u!20 &1448271236 stripped
-Camera:
-  m_CorrespondingSourceObject: {fileID: 6024132303617239347, guid: b2e52b79c90c80d41b15e29a2176fe02, type: 3}
-  m_PrefabInstance: {fileID: 6687212454487279969}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1452669797
 GameObject:
   m_ObjectHideFlags: 0
