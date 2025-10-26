@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5596cb0d80bf2e54ea6958770edaf25e, type: 3}
+  m_Name: CasinoWakeup Dialogue
+  m_EditorClassIdentifier: 
+  lines:
+  - speaker: "You\t"
+    body: What's this place ?
+    voiceClip: {fileID: 8300000, guid: 44ab96244bbcc3747958caf239c05f50, type: 3}
+    voiceVolume: 1
+    holdExtra: 2
+  - speaker: "You\t"
+    body: I must find the way out
+    voiceClip: {fileID: 8300000, guid: 44ab96244bbcc3747958caf239c05f50, type: 3}
+    voiceVolume: 1
+    holdExtra: 2
+  - speaker: "You\t"
+    body: Mabey the keypad overthere ?
+    voiceClip: {fileID: 8300000, guid: 44ab96244bbcc3747958caf239c05f50, type: 3}
+    voiceVolume: 1
+    holdExtra: 3
+  charsPerSecond: 8
+  punctuationDelay: 0.12
+  fadeIn: 0.15
+  perLineHold: 0.25
+  fadeOut: 0.2
+  enableFlicker: 1
+  flickerAmplitude: 0.05
+  flickerSpeed: 6

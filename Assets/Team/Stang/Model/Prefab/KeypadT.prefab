@@ -85,6 +85,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 54389965553047123}
     m_Modifications:
+    - target: {fileID: 1863397093716874294, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.289
+      objectReference: {fileID: 0}
+    - target: {fileID: 1863397093716874294, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.003
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872427563293375531, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: onSolved.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872427563293375531, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: onSolved.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872427563293375531, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: onSolved.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872427563293375531, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: onSolved.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Play
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872427563293375531, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: onSolved.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UnityEngine.Playables.PlayableDirector, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872427563293375531, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
+      propertyPath: onSolved.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 5617624348023217975, guid: e6a0de59c519b9e46b95b1b0814aa1a8, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.13818917

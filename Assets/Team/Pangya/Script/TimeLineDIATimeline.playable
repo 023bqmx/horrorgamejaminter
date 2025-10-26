@@ -223,7 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a015644f61987947ae356893161cbcc, type: 3}
   m_Name: DialogueClip
   m_EditorClassIdentifier: 
-  sequence: {fileID: 11400000, guid: 5cfee2e38981af44e9fd2d18ea46fed2, type: 2}
+  sequence: {fileID: 11400000, guid: afe591f63bd80914187ac16e98151fe7, type: 2}
   pauseDirector: 1
   editorHintDuration: 2
 --- !u!114 &-475934626400093390

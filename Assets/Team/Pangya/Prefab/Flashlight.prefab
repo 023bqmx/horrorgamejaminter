@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 3274143943024435836}
   - component: {fileID: 8045823054888988248}
   - component: {fileID: 3843639007672482180}
+  - component: {fileID: 4937274040253438980}
   m_Layer: 0
   m_Name: Flashlight
   m_TagString: Untagged
@@ -225,11 +226,11 @@ MonoBehaviour:
   startOn: 1
   maxIntensity: 120
   onOffLerpSpeed: 16
-  useBattery: 0
-  batterySeconds: 50
+  useBattery: 1
+  batterySeconds: 120
   baseDrainPerSecond: 1
   intensityDrainMultiplier: 1
-  idleDrainPerSecond: 0
+  idleDrainPerSecond: 1
   batteryDimCurve:
     serializedVersion: 2
     m_Curve:
@@ -255,7 +256,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   lowBatteryThreshold: 1
-  lowBatteryFlickerHz: 96.6
+  lowBatteryFlickerHz: 140
   blockOnWhenEmpty: 1
   onBatteryChanged:
     m_PersistentCalls:
@@ -268,9 +269,9 @@ MonoBehaviour:
       m_Calls: []
   toggleAction: {fileID: 9195571639876190003, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   holdAction: {fileID: 0}
-  audioSource: {fileID: 0}
-  clickOn: {fileID: 0}
-  clickOff: {fileID: 0}
+  audioSource: {fileID: 4937274040253438980}
+  clickOn: {fileID: 8300000, guid: 577f2a9d3859cbe4fb5ae4cd92d04e81, type: 3}
+  clickOff: {fileID: 8300000, guid: 1736d45af35cf8f43a44e58b920cb170, type: 3}
   clickEmpty: {fileID: 0}
   aimCamera: {fileID: 0}
   rotateThis: {fileID: 6679705829492949806}
@@ -282,3 +283,100 @@ MonoBehaviour:
   aimSmoothTime: 0.08
   aimMaxDegreesPerSecond: 540
   minAimDistance: 0.5
+--- !u!82 &4937274040253438980
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4682551419774998077}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

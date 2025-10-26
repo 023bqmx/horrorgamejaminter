@@ -341,7 +341,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   director: {fileID: 1517471129}
-  nextSceneName: MAin When Die
+  nextSceneName: MAin when Die
   nextSceneBuildIndex: -1
   playOnStart: 0
   useAsync: 0
