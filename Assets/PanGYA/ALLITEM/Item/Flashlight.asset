@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 1bbc4cad2521bda41bcb74fc7a51dab5
   displayName: Flashlight
-  icon: {fileID: 21300000, guid: 6a17271386cc9124eaead6cccf08347b, type: 3}
+  icon: {fileID: -890069179, guid: ab539e24a9f1e424fbde580db7c5112e, type: 3}
   consumableOnUse: 0
