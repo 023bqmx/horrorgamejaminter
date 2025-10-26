@@ -54,7 +54,7 @@ MonoBehaviour:
   ambientClip: {fileID: 8300000, guid: 4f0f6731c1a9bc547b17ddb277b8e6e0, type: 3}
   chaseClip: {fileID: 8300000, guid: 371334a5ca1af674389d2051ce714b13, type: 3}
   disturbClip: {fileID: 0}
-  fadeTime: 3
+  fadeTime: 1
   autoPlayAmbient: 1
   ambientVolume: 0.1
   chaseVolume: 0.15
