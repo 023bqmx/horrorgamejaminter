@@ -17,7 +17,7 @@ MonoBehaviour:
     body: Hmm... what's that?
     voiceClip: {fileID: 0}
     voiceVolume: 0
-    holdExtra: 0
+    holdExtra: 1
   - speaker: 'OURS :'
     body: A slot machine?
     voiceClip: {fileID: 0}
@@ -27,9 +27,9 @@ MonoBehaviour:
     body: 'Imma try to roll it... '
     voiceClip: {fileID: 0}
     voiceVolume: 0
-    holdExtra: 0
-  charsPerSecond: 10
-  punctuationDelay: 0.12
+    holdExtra: 1
+  charsPerSecond: 20
+  punctuationDelay: 0.11
   fadeIn: 0.15
   perLineHold: 0.25
   fadeOut: 0.2

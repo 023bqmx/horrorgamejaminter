@@ -14,22 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - speaker: 'OURS :'
-    body: damn...
+    body: That Was fun maybe i should go again.
     voiceClip: {fileID: 0}
     voiceVolume: 0
-    holdExtra: 0
+    holdExtra: 1
   - speaker: 'OURS :'
-    body: so dark here
+    body: 'damn... '
     voiceClip: {fileID: 0}
     voiceVolume: 0
-    holdExtra: 0
+    holdExtra: 1
   - speaker: 'OURS :'
-    body: Hmm... what's that?
+    body: Why this road is so dark.
     voiceClip: {fileID: 0}
     voiceVolume: 0
-    holdExtra: 0
-  charsPerSecond: 10
-  punctuationDelay: 0.29
+    holdExtra: 1
+  charsPerSecond: 18.8
+  punctuationDelay: 0.03
   fadeIn: 0.15
   perLineHold: 0.25
   fadeOut: 0.2

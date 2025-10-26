@@ -17,20 +17,17 @@ MonoBehaviour:
     body: 'Let me go home real quick '
     voiceClip: {fileID: 0}
     voiceVolume: 1
-    holdExtra: 0
+    holdExtra: 1.25
   - speaker: 'OUR :'
     body: I feel like that way is not good.
     voiceClip: {fileID: 0}
     voiceVolume: 1
-    holdExtra: 0
+    holdExtra: 1.25
   charsPerSecond: 28
   punctuationDelay: 0.12
   fadeIn: 0.15
   perLineHold: 0.25
   fadeOut: 0.2
-  charSfx: {fileID: 8300000, guid: 05b6fb881a505394daed4c662265575d, type: 3}
-  charSfxVolume: 1
-  sfxEveryNChars: 8
   enableFlicker: 1
   flickerAmplitude: 0.05
   flickerSpeed: 6
