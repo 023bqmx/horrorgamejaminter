@@ -5,7 +5,7 @@ using UnityEngine;
 public class ItemDefinition : ScriptableObject
 {
     [Header("Identity")]
-    [SerializeField, HideInInspector] string id;          // keep unique but not hand-edited
+    [SerializeField, HideInInspector] string id;
     [SerializeField] string displayName = "Item";
     [SerializeField] Sprite icon;
 
@@ -13,18 +13,19 @@ public class ItemDefinition : ScriptableObject
     [Tooltip("If true, the item is removed after a successful Use on a target.")]
     [SerializeField] bool consumableOnUse = true;
 
+    [Header("Pickup Mode")]
+    [Tooltip("ถ้าเปิด = ต้องกดปุ่มค้างเพื่อเก็บ (แบบคันโยก) พร้อมแถบความคืบหน้า")]
+    [SerializeField] bool lever = false;
+
     public string Id => id;
     public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
     public Sprite Icon => icon;
     public bool ConsumableOnUse => consumableOnUse;
+    public bool Lever => lever;             // <<--- ใช้เช็คฝั่ง PlayerInteractor
 
 #if UNITY_EDITOR
-    // Ensure the ID is stable & unique:
-    // - Prefer the asset's .meta GUID (unique per asset, stays stable across moves/renames)
-    // - If not available (e.g., during temporary creation), fall back to a GUID
     void OnValidate()
     {
-        // Keep displayName in sync with asset name if blank
         if (string.IsNullOrWhiteSpace(displayName))
             displayName = name;
 
@@ -48,7 +49,6 @@ public class ItemDefinition : ScriptableObject
         }
     }
 
-    // Handy context menu to force a new random ID (rarely needed)
     [ContextMenu("Inventory/Regenerate Random ID")]
     void RegenerateRandomId()
     {

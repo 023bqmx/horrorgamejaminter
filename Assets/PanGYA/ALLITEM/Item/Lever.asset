@@ -16,3 +16,4 @@ MonoBehaviour:
   displayName: Lever
   icon: {fileID: 913022267, guid: 5d973ec94607dbc4882117001bee2222, type: 3}
   consumableOnUse: 1
+  lever: 1

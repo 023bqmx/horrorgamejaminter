@@ -29,6 +29,11 @@ public class PlayerInteractor : MonoBehaviour
     ItemUsePuzzleTarget currentHoverPuzzle;
     OutlineHighlighter _lastHoverHL;
 
+    // ===== เพิ่มฟิลด์ตั้งค่า/อ้างอิงด้านบนของคลาส =====
+    [Header("Lever (hold-to-pick)")]
+    [SerializeField, Min(0.2f)] float leverPickupSeconds = 10f;      // ต้องกดค้างรวมกันกี่วิ
+    [SerializeField] CrosshairHoldRing holdRing;                       // วงแหวนรอบ crosshair
+
     public void SetActiveSlot(int slot)
     {
         activeSlot = Mathf.Clamp(slot, 0, 4);
@@ -44,8 +49,26 @@ public class PlayerInteractor : MonoBehaviour
     {
         UpdateHover();
 
-        if (currentHoverPickup && Input.GetKeyDown(pickKey))
-            TryPickCurrent();
+        // ===== ใน Update() แก้บล็อกกดเก็บของเดิม =====
+        // เดิม: if (currentHoverPickup && Input.GetKeyDown(pickKey)) TryPickCurrent();
+        // แทนที่ด้วย:
+        if (currentHoverPickup)
+        {
+            var def = currentHoverPickup.Item;
+            if (def != null && def.Lever)
+                UpdateLeverPickup();                // กดค้างแบบมี progress
+            else
+            {
+                // พฤติกรรมเดิม: กดครั้งเดียวเก็บ
+                if (Input.GetKeyDown(pickKey)) TryPickCurrent();
+                // ซ่อนวงแหวนถ้าไม่ใช่โหมด Lever
+                if (holdRing) holdRing.HideImmediate();
+            }
+        }
+        else
+        {
+            if (holdRing) holdRing.HideImmediate();
+        }
 
         // number keys 1..5
         if (Input.GetKeyDown(KeyCode.Alpha1)) activeSlot = 0;
@@ -56,6 +79,34 @@ public class PlayerInteractor : MonoBehaviour
 
         if (Input.GetKeyDown(useKey))
             TryUseActiveOnTarget();
+    }
+    void UpdateLeverPickup()
+    {
+        if (!currentHoverPickup) { if (holdRing) holdRing.HideImmediate(); return; }
+
+        // ดึง/สร้างตัวเก็บ progress ไว้บนชิ้นของนั้น ๆ
+        var prog = currentHoverPickup.GetComponent<LeverPickupProgress>();
+        if (!prog) prog = currentHoverPickup.gameObject.AddComponent<LeverPickupProgress>();
+
+        // อัปเดต UI hover ให้บอกว่า "Hold" ไม่ใช่ "Press"
+        // (ตัว Show หลักทำใน UpdateHover() อยู่แล้ว ด้านล่างเราจะโชว์วงแหวน)
+        float needed = Mathf.Max(0.01f, leverPickupSeconds);
+
+        if (Input.GetKey(pickKey))
+        {
+            prog.secondsAccumulated = Mathf.Min(prog.secondsAccumulated + Time.deltaTime, needed);
+        }
+        // ไม่ลด progress เมื่อปล่อยปุ่ม (ตามที่ต้องการ)
+
+        float t = prog.secondsAccumulated / needed;
+        if (holdRing) holdRing.SetProgress(t);
+
+        // ครบหลอด -> เก็บของ
+        if (t >= 1f)
+        {
+            if (holdRing) holdRing.HideImmediate();
+            TryPickCurrent();
+        }
     }
 
     void UpdateHover()
@@ -88,8 +139,14 @@ public class PlayerInteractor : MonoBehaviour
         // ----- Build hover UI label -----
         if (currentHoverPickup)
         {
-            string label = $"<b>{currentHoverPickup.Item.DisplayName}</b>\n<alpha=#AA>Press [{pickKey}]";
+            bool isLever = currentHoverPickup.Item != null && currentHoverPickup.Item.Lever;
+            string action = isLever ? "Hold" : "Press";
+            string label = $"<b>{currentHoverPickup.Item.DisplayName}</b>\n<alpha=#AA>{action} [{pickKey}]";
             hoverUI?.Show(label);
+
+            // ถ้าเป็น Lever แต่ยังไม่มี progress ให้โชว์วงแหวนเปล่า (ไม่บังคับ)
+            if (isLever && holdRing) holdRing.ShowEmpty();
+
             currentHoverPuzzle = null;
         }
         else if (hitPuzzle)
