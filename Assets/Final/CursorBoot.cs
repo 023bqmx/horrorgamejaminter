@@ -29,11 +29,11 @@ public class CursorBoot : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(toggleKey))
-        {
-            bool unlock = Cursor.lockState == CursorLockMode.Locked;
-            Set(unlock);
-        }
+        //if (Input.GetKeyDown(toggleKey))
+        //{
+        //    bool unlock = Cursor.lockState == CursorLockMode.Locked;
+        //    Set(unlock);
+        //}
     }
 
     void Unlock() => Set(true);

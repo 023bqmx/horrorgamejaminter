@@ -629,6 +629,23 @@ public class AIController : MonoBehaviour
         }
         return null;
     }
+    void OnEnable()
+    {
+        TryBindFace();
+        OSF_Service.OnReady += TryBindFace;
+    }
+    void OnDisable()
+    {
+        OSF_Service.OnReady -= TryBindFace;
+    }
+    void TryBindFace()
+    {
+        if (OSF_Service.Ready)
+        {
+            smileGate = OSF_Service.SmileGate;
+            trackingHealth = OSF_Service.TrackingHealth;
+        }
+    }
     void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(1f, .9f, 0f, .25f);

@@ -112,8 +112,24 @@ public class FaceIcon : MonoBehaviour
     }
     void OnEnable()
     {
+        BindFaceSignals();
+        OSF_Service.OnReady += BindFaceSignals; // เผื่อซีนโหลดมาก่อน service
+
         if (autoFindOnStart && (!smileGate || !face))
             StartCoroutine(AutoWireFromDDOL(-1f)); // -1 = รอจนกว่าจะเจอ
+    }
+    void OnDisable()
+    {
+        OSF_Service.OnReady -= BindFaceSignals;
+    }
+    void BindFaceSignals()
+    {
+        if (OSF_Service.Ready)
+        {
+            smileGate = OSF_Service.SmileGate;
+            face = OSF_Service.TrackingHealth;
+            // ถ้าจะ force refresh UI ก็ทำที่นี่ได้
+        }
     }
 
     void Update()
