@@ -2345,7 +2345,7 @@ MonoBehaviour:
   - {fileID: 3705191993777830559}
   - {fileID: 7647970909381296748}
   loopPatrol: 1
-  viewRadius: 15
+  viewRadius: 20
   viewAngle: 120
   obstacleMask:
     serializedVersion: 2
@@ -2385,6 +2385,10 @@ MonoBehaviour:
   jumpScareSceneName: JUMPSCENE
   jumpLoadDelay: 0
   oneShotCatch: 1
+  autoFindFaceTracking: 1
+  faceTrackingObjectName: FaceTracking Obj
+  faceTrackingTag: 
+  faceTrackingBindTimeout: 3
 --- !u!195 &5393085368498459397
 NavMeshAgent:
   m_ObjectHideFlags: 0
