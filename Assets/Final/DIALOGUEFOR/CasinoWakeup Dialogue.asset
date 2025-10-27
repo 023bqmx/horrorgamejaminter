@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: CasinoWakeup Dialogue
   m_EditorClassIdentifier: 
   lines:
-  - speaker: "You\t"
+  - speaker: 'You :'
     body: What's this place ?
     voiceClip: {fileID: 8300000, guid: 44ab96244bbcc3747958caf239c05f50, type: 3}
     voiceVolume: 1
     holdExtra: 2
-  - speaker: "You\t"
+  - speaker: 'You :'
     body: I must find the way out
     voiceClip: {fileID: 8300000, guid: 44ab96244bbcc3747958caf239c05f50, type: 3}
     voiceVolume: 1
     holdExtra: 2
-  - speaker: "You\t"
+  - speaker: 'You :'
     body: Mabey the keypad overthere ?
     voiceClip: {fileID: 8300000, guid: 44ab96244bbcc3747958caf239c05f50, type: 3}
     voiceVolume: 1

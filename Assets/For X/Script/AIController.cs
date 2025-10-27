@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(NavMeshAgent), typeof(Animator), typeof(Rigidbody))]
 public class AIController : MonoBehaviour
 {
     public GameObject Player;
@@ -105,6 +106,12 @@ public class AIController : MonoBehaviour
 
     bool _caught = false;
 
+    [Header("Auto-Wire (FaceTracking Obj)")]
+    [SerializeField] bool autoFindFaceTracking = true;
+    [SerializeField] string faceTrackingObjectName = "FaceTracking Obj";
+    [SerializeField] string faceTrackingTag = ""; // ว่างได้ ถ้าอยากใช้เฉพาะชื่อ
+    [SerializeField] float faceTrackingBindTimeout = 3f;      // เผื่อโหลดช้า/ DDOL
+
     public bool IsChasing => chasing;
     public System.Action<bool> OnChaseStateChanged;
 
@@ -113,6 +120,8 @@ public class AIController : MonoBehaviour
         ConfigureFootAudio3D();
         ConfigureVoiceAudio3D();  // << เพิ่มบรรทัดนี้
         EnsureKinematicRigidbody(); // << เพิ่มบรรทัดนี้
+
+        if (autoFindFaceTracking) StartCoroutine(AutoWireFaceTracking());
     }
 
     void Start()
@@ -125,7 +134,6 @@ public class AIController : MonoBehaviour
         agent.speed = walkSpeed;
         if (waypoints != null && waypoints.Length > 0)
             TrySetDestination(waypoints[wpIndex].position);
-
     }
 
     void LateUpdate()
@@ -366,8 +374,8 @@ public class AIController : MonoBehaviour
         var forward = headObj ? headObj.forward : transform.forward;
         if (Vector3.Angle(forward, dir.normalized) > viewAngle * 0.5f) return false; // FOV
 
-        // occlusion (ใช้ SphereCast เล็ก ๆ ให้ทนกว่า Raycast)
-        if (Physics.SphereCast(eye, 0.1f, dir.normalized, out _, dir.magnitude, obstacleMask))
+        int mask = (obstacleMask.value == 0) ? ~0 : obstacleMask.value;
+        if (Physics.SphereCast(eye, 0.1f, dir.normalized, out _, dir.magnitude, mask))
             return false;
 
         return true;
@@ -535,6 +543,91 @@ public class AIController : MonoBehaviour
         voiceSrc.minDistance = voiceMinDistance;
         voiceSrc.maxDistance = voiceMaxDistance;
         if (voiceZeroDoppler) voiceSrc.dopplerLevel = 0f;
+    }
+    IEnumerator AutoWireFaceTracking()
+    {
+        float t = 0f;
+        while (t < faceTrackingBindTimeout && (!smileGate || !trackingHealth))
+        {
+            TryWireFaceTrackingOnce();
+            if (smileGate && trackingHealth) yield break;
+            t += Time.unscaledDeltaTime;
+            yield return null; // รอเฟรมถัดไป เผื่อ DDOL/Prefab สร้างช้า
+        }
+    }
+
+    void TryWireFaceTrackingOnce()
+    {
+        // 1) พยายามหา Player ก่อน (tag = Player)
+        if (!player)
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        // 2) ถ้ามี Player แล้ว ลองหาลูกชื่อ FaceTracking Obj ใต้ PlayerCapsule
+        if (player)
+        {
+            var ft = FindChildRecursive(player, faceTrackingObjectName);
+            if (ft)
+            {
+                if (!smileGate) smileGate = ft.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
+                if (!trackingHealth) trackingHealth = ft.GetComponentInChildren<OpenSeeTrackingHealth>(true);
+            }
+            // ยังไม่เจอจากชื่อลูก? ลองทั้งกิ่งใต้ PlayerCapsule
+            if (!smileGate || !trackingHealth)
+            {
+                if (!smileGate) smileGate = player.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
+                if (!trackingHealth) trackingHealth = player.GetComponentInChildren<OpenSeeTrackingHealth>(true);
+            }
+        }
+
+        // 3) เผื่อคุณตั้ง Tag ให้ FaceTracking Obj ไว้
+        if ((!smileGate || !trackingHealth) && !string.IsNullOrEmpty(faceTrackingTag))
+        {
+            var tagged = GameObject.FindGameObjectWithTag(faceTrackingTag);
+            if (tagged)
+            {
+                if (!smileGate) smileGate = tagged.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
+                if (!trackingHealth) trackingHealth = tagged.GetComponentInChildren<OpenSeeTrackingHealth>(true);
+            }
+        }
+
+        // 4) Fallback: หาโดยชื่อ/ทุกที่ (รวม DDOL) ด้วย Resources API
+        if (!smileGate || !trackingHealth)
+        {
+            var go = FindLoadedObjectByName(faceTrackingObjectName);
+            if (go)
+            {
+                if (!smileGate) smileGate = go.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
+                if (!trackingHealth) trackingHealth = go.GetComponentInChildren<OpenSeeTrackingHealth>(true);
+            }
+        }
+    }
+
+    // หา child ตามชื่อแบบ recursive
+    Transform FindChildRecursive(Transform root, string name)
+    {
+        if (!root || string.IsNullOrEmpty(name)) return null;
+        foreach (Transform c in root)
+        {
+            if (c.name == name) return c;
+            var hit = FindChildRecursive(c, name);
+            if (hit) return hit;
+        }
+        return null;
+    }
+
+    // หา GameObject ที่ "ถูกโหลดแล้ว" (รวม DontDestroyOnLoad) ตามชื่อ
+    GameObject FindLoadedObjectByName(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return null;
+        var all = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var g in all)
+        {
+            if (!g) continue;
+            // ตัด prefab asset ออก ให้เหลือเฉพาะ object ที่ active ใน scene/ DDOL
+            if (g.hideFlags != HideFlags.None) continue;
+            if (g.name == name) return g;
+        }
+        return null;
     }
     void OnDrawGizmosSelected()
     {

@@ -1,11 +1,20 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class FaceIcon : MonoBehaviour
 {
     [Header("Signals (from SmileGate)")]
     [SerializeField] private SmileGateByMouthWideAuto smileGate; // isSmiling, isCoolingDown, charge01
     [SerializeField] private OpenSeeTrackingHealth face;         // isTracking
+
+    // ================== NEW: Auto-wire จาก DDOL ==================
+    [Header("Auto-Wire (DDOL)")]
+    [SerializeField] private bool autoFindOnStart = true;
+    [SerializeField] private string ddolObjectName = "FaceTracking Obj";
+    [Tooltip("เว้นว่างได้ ถ้าอยากใช้เฉพาะชื่อวัตถุ")]
+    [SerializeField] private string ddolTag = ""; // ใส่ tag หากตั้งไว้ เช่น 'FaceTracking'
 
     [Header("Icons")]
     [SerializeField] private GameObject normalFace;
@@ -66,8 +75,6 @@ public class FaceIcon : MonoBehaviour
     enum Trend { Idle, Rising, Falling }
     Trend _trend = Trend.Idle;
 
-
-
     void Reset()
     {
         smileGate ??= GetComponent<SmileGateByMouthWideAuto>();
@@ -79,6 +86,9 @@ public class FaceIcon : MonoBehaviour
         Reset();
         SetupFillImage(normalFill);
         SetupFillImage(smileFill);
+
+        if (autoFindOnStart && (!smileGate || !face))
+            StartCoroutine(AutoWireFromDDOL());
 
         if (normalFill) { var c = normalFill.color; normalFill.color = new Color(c.r, c.g, c.b, 1f); normalFill.raycastTarget = false; }
         if (smileFill) { var c = smileFill.color; smileFill.color = new Color(c.r, c.g, c.b, 1f); smileFill.raycastTarget = false; }
@@ -140,6 +150,74 @@ public class FaceIcon : MonoBehaviour
         UpdateAudio(_currentFill, _prevFill);
 
         _prevFill = _currentFill;
+    }
+    public void ForceRebindFromDDOL()
+    {
+        StartCoroutine(AutoWireFromDDOL());
+    }
+
+    // ================== NEW: ค้นหาใน DDOL + Scene ปัจจุบัน ==================
+    IEnumerator AutoWireFromDDOL(float timeout = 3f)
+    {
+        float t = 0f;
+        while (t < timeout && (!smileGate || !face))
+        {
+            TryWireOnce();
+            if (smileGate && face) yield break;
+
+            // บางกรณี FaceTracking Obj ถูกสร้างช้ากว่าหน้าจอ UI
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        // ถ้ายังไม่เจอหลัง timeout จะปล่อยไว้เฉย ๆ (ไม่ยก exception เพื่อไม่กัด loop เกม)
+    }
+
+    void TryWireOnce()
+    {
+        // 1) ถ้ามีอ้างอิงแล้ว ข้าม
+        if (smileGate && face) return;
+
+        // 2) หาโดยชื่อ/แท็ก (รวมถึงใน DontDestroyOnLoad)
+        var go = FindDDOLByNameOrTag(ddolObjectName, ddolTag);
+        if (!go) go = GameObject.Find(ddolObjectName); // เผื่ออยู่ใน scene ปัจจุบัน
+
+        if (go)
+        {
+            // รองรับกรณีคอมโพเนนต์อยู่บนลูก
+            if (!smileGate) smileGate = go.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
+            if (!face) face = go.GetComponentInChildren<OpenSeeTrackingHealth>(true);
+        }
+
+        // 3) ฟอลแบ็กสุดท้าย: สแกนทั้งโปรเจ็กต์ที่โหลดอยู่ (รวม DDOL)
+        if (!smileGate)
+        {
+            var allGates = Resources.FindObjectsOfTypeAll<SmileGateByMouthWideAuto>();
+            smileGate = allGates.FirstOrDefault(c => c && c.gameObject.hideFlags == HideFlags.None);
+        }
+        if (!face)
+        {
+            var allHealth = Resources.FindObjectsOfTypeAll<OpenSeeTrackingHealth>();
+            face = allHealth.FirstOrDefault(c => c && c.gameObject.hideFlags == HideFlags.None);
+        }
+    }
+
+    static GameObject FindDDOLByNameOrTag(string name, string tag)
+    {
+        // สแกน GameObject ทั้งหมดที่โหลดอยู่ (ครอบคลุม DontDestroyOnLoad)
+        var all = Resources.FindObjectsOfTypeAll<GameObject>();
+        for (int i = 0; i < all.Length; i++)
+        {
+            var g = all[i];
+            if (!g || g.hideFlags != HideFlags.None) continue;       // ตัด asset/prefab ออก
+            if (!g.scene.IsValid()) continue;                        // กันเหลือเฟือ
+            if (!string.IsNullOrEmpty(tag))
+            {
+                if (g.CompareTag(tag)) return g;
+            }
+            if (!string.IsNullOrEmpty(name) && g.name == name)
+                return g;
+        }
+        return null;
     }
     // ===== ใช้ charge จริงในการทริกเกอร์ =====
     void TryPlayFullSfxUsingCharge(float charge01)

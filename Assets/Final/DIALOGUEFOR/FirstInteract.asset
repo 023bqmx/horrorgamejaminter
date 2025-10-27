@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: FirstInteract
   m_EditorClassIdentifier: 
   lines:
-  - speaker: 'OURS :'
+  - speaker: 'You :'
     body: That Was fun maybe i should go again.
     voiceClip: {fileID: 0}
     voiceVolume: 0
     holdExtra: 1
-  - speaker: 'OURS :'
+  - speaker: 'You :'
     body: 'damn... '
     voiceClip: {fileID: 0}
     voiceVolume: 0
     holdExtra: 1
-  - speaker: 'OURS :'
+  - speaker: 'You :'
     body: Why this road is so dark.
     voiceClip: {fileID: 0}
     voiceVolume: 0

@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: SecondDialogue
   m_EditorClassIdentifier: 
   lines:
-  - speaker: 'OURS :'
+  - speaker: 'You :'
     body: Hmm... what's that?
     voiceClip: {fileID: 0}
     voiceVolume: 0
     holdExtra: 1
-  - speaker: 'OURS :'
+  - speaker: 'You :'
     body: A slot machine?
     voiceClip: {fileID: 0}
     voiceVolume: 0
     holdExtra: 0
-  - speaker: 'OURS :'
+  - speaker: 'You :'
     body: 'Imma try to roll it... '
     voiceClip: {fileID: 0}
     voiceVolume: 0
