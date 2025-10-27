@@ -1,8 +1,7 @@
 using System.Linq;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-
 public class FaceIcon : MonoBehaviour
 {
     [Header("Signals (from SmileGate)")]
@@ -111,6 +110,11 @@ public class FaceIcon : MonoBehaviour
 
         if (sfxSource) sfxSource.spatialBlend = 0f; // บังคับ 2D
     }
+    void OnEnable()
+    {
+        if (autoFindOnStart && (!smileGate || !face))
+            StartCoroutine(AutoWireFromDDOL(-1f)); // -1 = รอจนกว่าจะเจอ
+    }
 
     void Update()
     {
@@ -157,68 +161,66 @@ public class FaceIcon : MonoBehaviour
     }
 
     // ================== NEW: ค้นหาใน DDOL + Scene ปัจจุบัน ==================
-    IEnumerator AutoWireFromDDOL(float timeout = 3f)
+    IEnumerator AutoWireFromDDOL(float timeout = -1f)
     {
-        float t = 0f;
-        while (t < timeout && (!smileGate || !face))
+        float endTime = (timeout > 0f) ? Time.realtimeSinceStartup + timeout : float.PositiveInfinity;
+        while (Time.realtimeSinceStartup < endTime && (!smileGate || !face))
         {
             TryWireOnce();
             if (smileGate && face) yield break;
-
-            // บางกรณี FaceTracking Obj ถูกสร้างช้ากว่าหน้าจอ UI
-            t += Time.unscaledDeltaTime;
             yield return null;
         }
-        // ถ้ายังไม่เจอหลัง timeout จะปล่อยไว้เฉย ๆ (ไม่ยก exception เพื่อไม่กัด loop เกม)
     }
 
     void TryWireOnce()
     {
-        // 1) ถ้ามีอ้างอิงแล้ว ข้าม
         if (smileGate && face) return;
 
-        // 2) หาโดยชื่อ/แท็ก (รวมถึงใน DontDestroyOnLoad)
-        var go = FindDDOLByNameOrTag(ddolObjectName, ddolTag);
-        if (!go) go = GameObject.Find(ddolObjectName); // เผื่ออยู่ใน scene ปัจจุบัน
-
+        var go = FindFaceTrackingObject();
         if (go)
         {
-            // รองรับกรณีคอมโพเนนต์อยู่บนลูก
-            if (!smileGate) smileGate = go.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
-            if (!face) face = go.GetComponentInChildren<OpenSeeTrackingHealth>(true);
+            smileGate ??= go.GetComponentInChildren<SmileGateByMouthWideAuto>(true);
+            face ??= go.GetComponentInChildren<OpenSeeTrackingHealth>(true);
         }
 
-        // 3) ฟอลแบ็กสุดท้าย: สแกนทั้งโปรเจ็กต์ที่โหลดอยู่ (รวม DDOL)
-        if (!smileGate)
-        {
-            var allGates = Resources.FindObjectsOfTypeAll<SmileGateByMouthWideAuto>();
-            smileGate = allGates.FirstOrDefault(c => c && c.gameObject.hideFlags == HideFlags.None);
-        }
-        if (!face)
-        {
-            var allHealth = Resources.FindObjectsOfTypeAll<OpenSeeTrackingHealth>();
-            face = allHealth.FirstOrDefault(c => c && c.gameObject.hideFlags == HideFlags.None);
-        }
+        // ฟอลแบ็กสุดท้าย: กวาดทุกที่ (active/inactive/DDOL)
+        smileGate ??= FindAnyLoaded<SmileGateByMouthWideAuto>();
+        face ??= FindAnyLoaded<OpenSeeTrackingHealth>();
     }
 
-    static GameObject FindDDOLByNameOrTag(string name, string tag)
+    GameObject FindFaceTrackingObject()
     {
-        // สแกน GameObject ทั้งหมดที่โหลดอยู่ (ครอบคลุม DontDestroyOnLoad)
-        var all = Resources.FindObjectsOfTypeAll<GameObject>();
-        for (int i = 0; i < all.Length; i++)
+        // 1) ตาม Tag (รองรับ inactive/DDOL)
+        if (!string.IsNullOrEmpty(ddolTag))
         {
-            var g = all[i];
-            if (!g || g.hideFlags != HideFlags.None) continue;       // ตัด asset/prefab ออก
-            if (!g.scene.IsValid()) continue;                        // กันเหลือเฟือ
-            if (!string.IsNullOrEmpty(tag))
-            {
-                if (g.CompareTag(tag)) return g;
-            }
-            if (!string.IsNullOrEmpty(name) && g.name == name)
-                return g;
+            var tagged = Resources.FindObjectsOfTypeAll<GameObject>()
+                .FirstOrDefault(g => g && g.hideFlags == HideFlags.None && g.CompareTag(ddolTag));
+            if (tagged) return tagged;
         }
+
+        // 2) ตามชื่อวัตถุ (active/inactive/DDOL)
+        var byName = Resources.FindObjectsOfTypeAll<GameObject>()
+            .FirstOrDefault(g => g && g.hideFlags == HideFlags.None && g.name == ddolObjectName);
+        if (byName) return byName;
+
+        // 3) เป็นลูกของ Player (Tag=Player) รวม inactive
+        var playerGO = Resources.FindObjectsOfTypeAll<GameObject>()
+            .FirstOrDefault(g => g && g.hideFlags == HideFlags.None && g.CompareTag("Player"));
+        if (playerGO)
+        {
+            var t = playerGO.GetComponentsInChildren<Transform>(true)
+                            .FirstOrDefault(x => x.name == ddolObjectName);
+            if (t) return t.gameObject;
+        }
+
         return null;
     }
+    static T FindAnyLoaded<T>() where T : Component
+    {
+        return Resources.FindObjectsOfTypeAll<T>()
+            .FirstOrDefault(c => c && c.gameObject.hideFlags == HideFlags.None);
+    }
+
     // ===== ใช้ charge จริงในการทริกเกอร์ =====
     void TryPlayFullSfxUsingCharge(float charge01)
     {
