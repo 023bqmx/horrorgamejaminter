@@ -1260,7 +1260,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -3205,6 +3205,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   smileGate: {fileID: 3689768740063317593}
   face: {fileID: 6089773779459213439}
+  autoFindOnStart: 1
+  ddolObjectName: FaceTracking Obj
+  ddolTag: 
   normalFace: {fileID: 3849961106310043828}
   smileFace: {fileID: 831481045242983347}
   trackingLost: {fileID: 8356134255992753910}
