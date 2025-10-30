@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Enemy
+  - UI CAMERA
   layers:
   - Default
   - TransparentFX
