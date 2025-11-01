@@ -683,7 +683,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -1574,7 +1574,7 @@ GameObject:
   - component: {fileID: 3795402452071263917}
   - component: {fileID: 2267385287690080044}
   m_Layer: 5
-  m_Name: TextureImage
+  m_Name: TextureImageGame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1619,7 +1619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 9c9c2a1d034c19c4bb17a2a864dc8948, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -2891,8 +2891,8 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5811054952449147561}
-  - {fileID: 4869010672562197753}
   - {fileID: 4135013735270702856}
+  - {fileID: 4869010672562197753}
   - {fileID: 5393215578589016641}
   - {fileID: 2645416692324416891}
   - {fileID: 7864153316880957242}
@@ -3702,6 +3702,14 @@ PrefabInstance:
     - target: {fileID: 5592906993699480726, guid: 87d8a8bc84bb84a4b9a41f1e98c288ae, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7698718591236605742, guid: 87d8a8bc84bb84a4b9a41f1e98c288ae, type: 3}
+      propertyPath: exePath
+      value: F:/Work/WORK2/horrorgamejaminter/Assets/StreamingAssets\OpenSeeFace\Binary\facetracker.exe
+      objectReference: {fileID: 0}
+    - target: {fileID: 7698718591236605742, guid: 87d8a8bc84bb84a4b9a41f1e98c288ae, type: 3}
+      propertyPath: modelPath
+      value: F:/Work/WORK2/horrorgamejaminter/Assets/StreamingAssets\OpenSeeFace\models
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
