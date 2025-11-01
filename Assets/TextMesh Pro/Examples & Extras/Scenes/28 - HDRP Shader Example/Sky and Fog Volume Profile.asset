@@ -375,10 +375,6 @@ MonoBehaviour:
   - {fileID: -4074489227769668399}
   - {fileID: 7773943877085393558}
   - {fileID: -521183366837270031}
-  - {fileID: 1396545774209881205}
-  - {fileID: 1666789422655071343}
-  - {fileID: 7915754795179681664}
-  - {fileID: 9140254865274401462}
 --- !u!114 &1396545774209881205
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -850,7 +846,7 @@ MonoBehaviour:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
 --- !u!114 &7773943877085393558
 MonoBehaviour:
   m_ObjectHideFlags: 3
