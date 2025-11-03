@@ -9,6 +9,7 @@ public class VignetteFaintOnTimeline : MonoBehaviour
     [Header("References")]
     public PlayableDirector director;
     public Volume volume;
+    public GameObject TimelineCam;
 
     [Header("Idle Pulse (normal state)")]
     [Tooltip("เปิดพัลส์เบาๆ ตอนปกติ (ก่อน/หลัง Timeline)")]
@@ -131,6 +132,7 @@ public class VignetteFaintOnTimeline : MonoBehaviour
     {
         _vig.intensity.overrideState = true;
         _vig.intensity.value = startIntensity;
+        TimelineCam.SetActive(true);
 
         float t = 0f;
         while (t < flickerDuration)
