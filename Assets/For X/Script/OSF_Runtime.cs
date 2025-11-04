@@ -1,38 +1,52 @@
 using UnityEngine;
 using System.IO;
-using OSFLauncher = OpenSee.OpenSeeLauncher;   // type alias กันชนชื่อ namespace
+using OSFLauncher = OpenSee.OpenSeeLauncher;   // alias
 using OSFComponent = OpenSee.OpenSee;
 
 [DefaultExecutionOrder(-1000)]
 public class OSF_Runtime : MonoBehaviour
 {
-    public static OSF_Runtime I;
+    private static OSF_Runtime _inst;          // singleton guard
+    private static bool _started;              // กันสตาร์ทซ้ำ
 
+    [Header("Refs")]
     [SerializeField] OSFLauncher launcher;
     [SerializeField] OSFComponent osf;
 
+    [Header("Defaults")]
+    [SerializeField] int fallbackCameraIndex = 0;  // ใช้ถ้าใน Inspector ยังเป็น -1
+
     void Awake()
     {
-        // wire field ที่ว่าง
+        // ----- Singleton + DDOL -----
+        if (_inst && _inst != this) { Destroy(gameObject); return; }
+        _inst = this;
+        DontDestroyOnLoad(gameObject);
+
+        // ----- Wire refs -----
         if (!launcher) launcher = GetComponent<OSFLauncher>();
         if (!osf) osf = GetComponent<OSFComponent>();
 
-        // ตั้ง path (เหมือนที่ทำอยู่)
+        // ----- Paths (StreamingAssets/OpenSeeFace) -----
         var root = Path.Combine(Application.streamingAssetsPath, "OpenSeeFace");
         if (launcher)
         {
             launcher.exePath = Path.Combine(root, "Binary", "facetracker.exe");
             launcher.modelPath = Path.Combine(root, "models");
             launcher.dynamicPort = true;
+
+            // กล้อง: ถ้ายังเป็น -1 ให้ตั้ง fallback
+            if (launcher.cameraIndex < 0) launcher.cameraIndex = fallbackCameraIndex;
         }
 
-        // สมัครเข้าศูนย์กลาง  ทำให้ SmileGate/TrackingHealth มีแน่นอนและถูกผูกกับ OpenSee
+        // บอก service ให้รู้จักชุดคอมโพเนนต์นี้
         OSF_Service.Register(gameObject);
 
-        // แล้วค่อยสตาร์ท (จะเจอ exe ไม่เจอ ค่อยไล่ log ต่อ)
-        launcher?.StartTracker();
+        // ----- Start once -----
+        if (!_started && launcher != null)
+        {
+            _started = true;
+            launcher.StartTracker();           // จะวิ่งอยู่ข้ามซีน
+        }
     }
-
-    public void StartTracking() => launcher?.StartTracker();
-    public void StopTracking() => launcher?.StopTracker();
 }

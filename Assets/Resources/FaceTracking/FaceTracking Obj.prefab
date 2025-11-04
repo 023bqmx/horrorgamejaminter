@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 8625865608631795385}
   - component: {fileID: 7698718591236605742}
   - component: {fileID: 7493482935336181313}
-  - component: {fileID: 978611674939137266}
   m_Layer: 7
   m_Name: FaceTracking Obj
   m_TagString: Untagged
@@ -141,17 +140,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   launcher: {fileID: 7698718591236605742}
   osf: {fileID: 8625865608631795385}
---- !u!114 &978611674939137266
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2359444297425968661}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54a6cd6519d3c6f48b3065e2752f43ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  localRoot: {fileID: 0}
-  promoteLocalToDDOL: 0
